@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Payment - EZ FOOD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'managepayments/checkout.css' %}">
+    <style>
+        .upi-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        .upi-header {
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .order-details {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        .qr-container {
+            text-align: center;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .qr-code {
+            width: 250px;
+            height: 250px;
+            background: #fff;
+            margin: 0 auto 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .qr-code img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .instruction-title {
+            color: #ff9800;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .instruction-steps {
+            background: #fff8e1;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .instruction-steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .instruction-steps li {
+            margin-bottom: 8px;
+        }
+        .btn-proceed {
+            background-color: #4caf50;
+        }
+        .btn-proceed:hover {
+            background-color: #388e3c;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .contact-info {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="/shop/" class="logo">
+            <i class="fas fa-utensils"></i> <strong>EZ FOOD</strong>
+        </a>
+    </header>
+
+    <div class="upi-container">
+        <div class="upi-header">
+            <h2>UPI Payment</h2>
+            <p>Scan & Pay</p>
+        </div>
+        
+        <div class="secure-badge">
+            <i class="fas fa-lock"></i> Secure Payment
+        </div><br>
+
+        <div class="secure-badge">
+            <i class="fas fa-lock"></i> NOTE: This payment gateway is under development.
+        </div>
+        
+        <div class="order-details">
+            <p><strong>Order ID:</strong> {{ order_id }}</p>
+            <p><strong>Amount:</strong> ₹{{ amount|floatformat:2 }}</p>
+            <p><strong>Transaction Note:</strong> ORDER{{ order_id }}-{{ student_id }}</p>
+        </div>
+        
+        <div class="qr-container">
+            <p>Scan this QR code with any UPI app</p>
+            <div class="qr-code">
+                <img src="{{ qr_code }}" alt="UPI Payment QR Code">
+            </div>
+            <p class="mt-2">Scan to pay ₹{{ amount|floatformat:2 }}</p>
+        </div>
+        
+        <div class="instruction-title">Payment Instructions</div>
+        <div class="instruction-steps">
+            <ol>
+                <li>Open any UPI app (GPay, PhonePe, Paytm, etc.)</li>
+                <li>Scan the QR code above</li>
+                <li>Verify the amount (₹{{ amount|floatformat:2 }})</li>
+                <li>Complete the payment</li>
+                <li>Forward the payment confirmation SMS to the cafeteria staff (WhatsApp: <strong>+91 9XXXXXXXX</strong>)</li>
+                <li>Show your order ID: <strong>{{ order_id }}</strong> to collect your food</li>
+            </ol>
+        </div>
+        
+        <div class="button-group">
+            <!-- With this: -->
+            <a href="{% url 'managepayments:process_upi_payment' %}" class="btn btn-proceed">
+                I've completed the payment
+            </a>
+            <a href="/shop/" class="btn">Cancel Payment</a>
+        </div>
+        
+        <div class="contact-info">
+            <p>Having trouble? Contact cafeteria staff at: <strong>+91 9XXXXXXXX</strong></p>
+        </div>
+    </div>
+</body>
+</html>

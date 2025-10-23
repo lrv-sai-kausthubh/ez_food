@@ -1,0 +1,180 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - EZ FOOD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'managepayments/checkout.css' %}">
+    <style>
+        .razorpay-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        .razorpay-header {
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .razorpay-header img {
+            max-width: 150px;
+        }
+        .order-details {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        .razorpay-form .form-group {
+            margin-bottom: 20px;
+        }
+        .razorpay-footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: #2e7d32;
+        }
+        .secure-badge i {
+            margin-right: 10px;
+        }
+        .qr-container {
+            text-align: center;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: #fff;
+            margin: 0 auto 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            position: relative;
+        }
+        .qr-code img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .qr-code-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 36px;
+            color: #2196F3;
+        }
+        .upi-id {
+            background: #fff;
+            padding: 8px;
+            border: 1px dashed #999;
+            display: inline-block;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="razorpay-container">
+        <div class="razorpay-header">
+            <h2>Razorpay Payment</h2>
+            <p>Secure Payment Gateway</p>
+        </div>
+        
+        <div class="secure-badge">
+            <i class="fas fa-lock"></i> Secure Payment
+        </div>
+        
+        <div class="order-details">
+            <p><strong>Order ID:</strong> {{ razorpay_order_id }}</p>
+            <p><strong>Amount:</strong> ₹{{ razorpay_amount|floatformat:2 }}</p>
+            <p><strong>Name:</strong> {{ customer_name }}</p>
+            <p><strong>Payment Method:</strong> {{ payment_method|title }}</p>
+        </div>
+        
+        <form class="razorpay-form" id="payment-form">
+            {% if payment_method == 'card' %}
+            <!-- Card Payment Form -->
+            <div class="form-group">
+                <label for="card-number">Card Number</label>
+                <input type="text" id="card-number" placeholder="4111 1111 1111 1111" value="4111 1111 1111 1111" class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label for="expiry">Expiry (MM/YY)</label>
+                        <input type="text" id="expiry" placeholder="12/25" value="12/25" class="form-control">
+                    </div>
+                    <div>
+                        <label for="cvv">CVV</label>
+                        <input type="text" id="cvv" placeholder="123" value="123" class="form-control">
+                    </div>
+                </div>
+            </div>
+            {% elif payment_method == 'upi' %}
+            <!-- UPI Payment Form with QR Code -->
+            <div class="qr-container">
+                <p>Scan this QR code with any UPI app</p>
+                <div class="qr-code">
+                    <!-- Mock QR code with background pattern -->
+                    <div style="width: 100%; height: 100%; background-image: repeating-linear-gradient(45deg, #f2f2f2, #f2f2f2 10px, #e6e6e6 10px, #e6e6e6 20px);"></div>
+                    <div class="qr-code-overlay">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                </div>
+                <div class="upi-id">
+                    <strong>UPI ID:</strong> ezfood@ybl
+                </div>
+                <p class="mb-0">Amount: ₹{{ razorpay_amount|floatformat:2 }}</p>
+            </div>
+            {% endif %}
+            
+            <div class="form-group">
+                <button type="submit" class="btn" id="pay-button">Pay ₹{{ razorpay_amount|floatformat:2 }} To Delivery agent upon receiving the items</button>
+                <div id="loading" style="display: none; text-align: center; margin-top: 10px;">
+                    <i class="fas fa-spinner fa-spin"></i> Processing payment...
+                </div>
+            </div>
+            
+            <div class="razorpay-footer">
+                <p>By completing this payment, you agree to the terms and conditions.</p>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        document.getElementById('payment-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading
+            document.getElementById('pay-button').disabled = true;
+            document.getElementById('loading').style.display = 'block';
+            
+            // Simulate payment processing delay
+            setTimeout(function() {
+                // Create payment ID based on payment method
+                const paymentMethod = '{{ payment_method }}';
+                const paymentId =  paymentMethod + '_{{ razorpay_order_id }}';
+                
+                // Redirect to callback URL with success parameters
+                window.location.href = "{{ callback_url }}?razorpay_order_id={{ razorpay_order_id }}&razorpay_payment_id=" + paymentId + "&razorpay_signature=mock_signature&status=success&order_id={{ order.order_id }}&payment_method={{ payment_method }}";
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

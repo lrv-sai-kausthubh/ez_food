@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - EZ FOOD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'managepayments/checkout.css' %}">
+    <style>
+        .success-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+        .success-box {
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+        }
+        .success-icon {
+            font-size: 5rem;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        .order-details {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 4px;
+            background: #f9f9f9;
+            text-align: left;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .receipt-btn {
+            background-color: #4caf50;
+        }
+
+
+        .sms-instructions {
+        background-color: #fff8e1;
+        padding: 15px;
+        margin-top: 20px;
+        border-left: 4px solid #ff9800;
+        text-align: left;
+    }
+    .sms-instructions h3 {
+        color: #ff9800;
+        margin-top: 0;
+    }
+    .phone-number {
+        font-weight: bold;
+        font-size: 1.2em;
+    }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="/shop/" class="logo">
+            <i class="fas fa-utensils"></i> <strong>EZ FOOD</strong>
+        </a>
+    </header>
+
+    <div class="success-container">
+        <div class="success-box">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h1>Payment Successful!</h1>
+            <p>Your payment has been successfully processed.</p>
+            
+            <div class="order-details">
+                <p><strong>Order ID:</strong> {{ order.order_id }}</p>
+                <p><strong>Amount:</strong> ₹{{ order.total_amount|floatformat:2 }}</p>
+                <p><strong>Transaction ID:</strong> {{ order.payment_id }}</p>
+            </div>
+            
+            <div class="button-group">
+                <a href="{% url 'managepayments:download_receipt' %}?order_id={{ order.order_id }}" class="btn receipt-btn">
+                    <i class="fas fa-file-invoice"></i> Download Receipt
+                </a>
+                <a href="/shop/" class="btn">Return to Menu</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this after the order details div -->
+    <div class="sms-instructions">
+        <h3>Important: Forward Payment SMS</h3>
+        <p>Please forward your bank's payment confirmation SMS to the cafeteria staff at:</p>
+        <p class="phone-number">+91 9XXXXXXXX</p>
+        <p>Include your Order ID: <strong>{{ order.order_id }}</strong> in the message</p>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Store the order ID in localStorage for order history
+        const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+        const cart = JSON.parse(localStorage.getItem('checkoutCart') || '[]');
+        
+        // Create order data object
+        if (cart.length > 0) {
+            const orderData = {
+                orderId: '{{ order.order_id }}',
+                studentId: '{{ order.student_id }}',
+                date: new Date().getTime(),
+                items: cart
+            };
+            
+            // Add new order at the beginning
+            orderHistory.unshift(orderData);
+            
+            // Save updated history
+            localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+            
+            // Clear BOTH checkout cart and main cart from localStorage
+            localStorage.removeItem('checkoutCart');
+            localStorage.removeItem('cart');
+        }
+    });
+</script>
+</body>
+</html>

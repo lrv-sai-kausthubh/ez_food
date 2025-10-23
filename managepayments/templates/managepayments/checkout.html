@@ -1,0 +1,310 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - EZ FOOD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'managepayments/checkout.css' %}">
+</head>
+<body>
+    <header class="header">
+        <a href="/shop/" class="logo">
+            <i class="fas fa-utensils"></i> <strong>EZ FOOD</strong>
+        </a>
+        <div class="back-link">
+            <a href="/shop/"><i class="fas fa-arrow-left"></i> Back to Menu</a>
+        </div>
+    </header>
+
+    <div class="checkout-container">
+        <h1>Complete Your Order</h1>
+        
+        <div class="checkout-main">
+            <div class="order-summary">
+                <h2>Order Summary</h2>
+                <div id="cart-items" class="cart-items-list">
+                    <!-- Cart items will be displayed here -->
+                    <div class="empty-cart-message" style="display: none;">
+                        Your cart is empty. Please add items before checking out.
+                    </div>
+                </div>
+                <div class="order-total">
+                    Total: ₹<span id="cart-total">0.00</span>
+                </div>
+            </div>
+            
+            <div class="payment-form">
+                <h2>Payment Details</h2>
+                <!-- Replace the form action in checkout.html to point to create-payment -->
+                <form id="checkout-form" action="{% url 'managepayments:create_payment' %}" method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Replace the name input field with this -->
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" value="{{ user_name }}" readonly>
+                        <small class="form-text">You can only place orders with your own account name.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="student-id">Student ID</label>
+                        <input type="text" id="student-id" name="student_id" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payment-method">Payment Method</label>
+                        <select id="payment-method" name="payment_method" required>
+                            <option value="">-- Select Payment Method --</option>
+                            <option value="cash">Cash on Delivery</option>
+                            {% comment %} <option value="card">Credit/Debit Card</option> {% endcomment %}
+                            <option value="upi">UPI</option>
+                            <option value="classroom_delivery">Deliver to class</option>
+                        </select>
+                    </div>
+
+
+
+                    <!-- Classroom delivery fields (hidden by default) -->
+                    <div id="classroom-delivery-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="floor-number">Floor Number</label>
+                            <select id="floor-number" name="floor_number" required>
+                                <option value="">-- Select Floor --</option>
+                                <option value="1">1st Floor</option>
+                                <option value="2">2nd Floor</option>
+                                <option value="3">3rd Floor</option>
+                                <option value="4">4th Floor</option>
+                                <option value="5">5th Floor</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="classroom">Classroom Number</label>
+                            <input type="text" id="classroom" name="classroom" placeholder="e.g. 302" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="delivery-time">Preferred Delivery Time</label>
+                            <select id="delivery-time" name="delivery_time" required>
+                                <option value="">-- Select Time --</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="12:00">12:00 PM</option>
+                                <option value="13:00">1:00 PM</option>
+                                <option value="14:00">2:00 PM</option>
+                                <option value="15:00">3:00 PM</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="delivery-notes">Delivery Notes (Optional)</label>
+                            <textarea id="delivery-notes" name="delivery_notes" placeholder="Any special instructions for delivery"></textarea>
+                        </div>
+                    </div>
+
+
+                    
+                    <input type="hidden" id="cart-data" name="cart_data">
+                    <button type="submit" class="btn">Complete Payment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Generate order ID using the same format as cafe.js
+        function generateOrderId() {
+            return 'CMS-' + Math.floor(100000 + Math.random() * 900000);
+        }
+        {% comment %} function generateOrderId() {
+            return 'lrv-cms-' + Math.floor(100000 + Math.random() * 900000);
+        } {% endcomment %}
+
+        // Handle post-order processing (save to history, clear cart, redirect)
+        function finalizeOrder(orderId, cart) {
+            // Create order data object
+            const orderData = {
+                orderId: orderId,
+                studentId: document.getElementById('student-id').value,
+                date: new Date().getTime(),
+                items: cart
+            };
+            
+            // Get existing order history or create new array
+            const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+            
+            // Add new order at the beginning
+            orderHistory.unshift(orderData);
+            
+            // Save updated history
+            localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+            
+            // Clear BOTH checkout cart and main cart from localStorage
+            localStorage.removeItem('checkoutCart');
+            localStorage.removeItem('cart');
+            
+            // Redirect to confirmation page
+            window.location.href = "{% url 'managepayments:confirmation' %}";
+        }
+
+        // Main document ready function
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get cart data from localStorage
+            const cart = JSON.parse(localStorage.getItem('checkoutCart') || '[]');
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartTotalElement = document.getElementById('cart-total');
+            const cartDataInput = document.getElementById('cart-data');
+            const emptyCartMessage = document.querySelector('.empty-cart-message');
+            const submitButton = document.getElementById('checkout-form').querySelector('button[type="submit"]');
+            
+            // If cart is empty, show message and disable form
+            if (cart.length === 0) {
+                emptyCartMessage.style.display = 'block';
+                submitButton.disabled = true;
+                return;
+            }
+            
+            // Display cart items
+            let total = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                const itemElement = document.createElement('div');
+                itemElement.className = 'cart-item';
+                itemElement.innerHTML = `
+                    <div class="cart-item-details">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-price">₹${item.price.toFixed(2)} × ${item.quantity}</span>
+                    </div>
+                    <span class="item-total">₹${itemTotal.toFixed(2)}</span>
+                `;
+                cartItemsContainer.appendChild(itemElement);
+            });
+            
+            // Update total
+            cartTotalElement.textContent = total.toFixed(2);
+            
+            // Store cart data in hidden input
+            cartDataInput.value = JSON.stringify(cart);
+            
+            // Handle form submission
+            document.getElementById('checkout-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                // Basic form validation
+                const name = document.getElementById('name').value.trim();
+                const studentId = document.getElementById('student-id').value.trim();
+                const paymentMethod = document.getElementById('payment-method').value;
+                
+                if (!name || !studentId || !paymentMethod) {
+                    alert('Please fill out all required fields');
+                    return;
+                }
+                
+                // Disable submit button to prevent double submissions
+                submitButton.disabled = true;
+                submitButton.textContent = 'Processing...';
+                
+                // Generate the order ID
+                const orderId = generateOrderId();
+                
+                // Submit the form with AJAX
+                const formData = new FormData(this);
+                formData.append('order_id', orderId);
+                formData.append('cart_data', JSON.stringify(cart));
+                
+                // Get CSRF token from cookie
+                const csrfToken = document.cookie
+                    .split('; ')
+                    .find(row => row.startsWith('csrftoken='))
+                    ?.split('=')[1];
+                    
+                // Add CSRF token to headers
+                const headers = {
+                    'X-Requested-With': 'XMLHttpRequest'
+                };
+                
+                if (csrfToken) {
+                    headers['X-CSRFToken'] = csrfToken;
+                }
+                
+                // Process the payment
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: headers
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Full response data:", data);
+                    
+                    if (data.status === 'success') {
+                        console.log('Order successfully processed with payment method:', paymentMethod);
+                        
+                        // Add explicit handling for UPI payments
+                        if (paymentMethod === 'upi' && data.redirect_url) {
+                            console.log('UPI payment detected, redirecting to:', data.redirect_url);
+                            window.location.replace(data.redirect_url); // Use replace instead of href
+                        } 
+                        else if (data.redirect_url) {
+                            console.log('Non-UPI redirect detected, redirecting to:', data.redirect_url);
+                            window.location.href = data.redirect_url;
+                        } 
+                        else {
+                            console.log('No redirect URL, finalizing order locally');
+                            finalizeOrder(orderId, cart);
+                        }
+                    } else {
+                        // Re-enable button on error
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Complete Payment';
+                        
+                        console.error('Payment processing error:', data);
+                        alert('Payment processing failed: ' + (data.message || 'Please try again.'));
+                    }
+                })
+                .catch(error => {
+                    // Re-enable button on error
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Complete Payment';
+                    
+                    console.error('Error processing payment:', error);
+                    alert('An error occurred while processing your payment. Please try again.');
+                });
+                });
+            });
+        
+
+            // Handle payment method selection
+            const paymentMethodSelect = document.getElementById('payment-method');
+            const classroomDeliveryFields = document.getElementById('classroom-delivery-fields');
+
+            paymentMethodSelect.addEventListener('change', function() {
+                if (this.value === 'classroom_delivery') {
+                    classroomDeliveryFields.style.display = 'block';
+                    // Make classroom delivery fields required
+                    document.querySelectorAll('#classroom-delivery-fields select, #classroom-delivery-fields input').forEach(el => {
+                        if (el.name !== 'delivery_notes') {
+                            el.setAttribute('required', 'required');
+                        }
+                    });
+                } else {
+                    classroomDeliveryFields.style.display = 'none';
+                    // Make classroom delivery fields not required
+                    document.querySelectorAll('#classroom-delivery-fields select, #classroom-delivery-fields input').forEach(el => {
+                        el.removeAttribute('required');
+                    });
+                }
+            });
+            
+    </script>
+
+</body>
+</html>

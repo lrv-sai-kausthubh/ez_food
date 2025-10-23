@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmation - EZ FOOD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'managepayments/checkout.css' %}">
+</head>
+<body>
+    <header class="header">
+        <a href="/shop/" class="logo">
+            <i class="fas fa-utensils"></i> <strong>EZ FOOD</strong>
+        </a>
+    </header>
+
+    <div class="confirmation-container">
+        <div class="confirmation-box">
+            <div class="checkmark">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h1>Order Confirmed!</h1>
+            <p>Your order has been successfully placed.</p>
+            <p>Thank you for using EZ FOOD!</p>
+            <div class="button-group">
+                <a href="{% url 'managepayments:download_receipt' %}" class="btn receipt-btn">
+                    <i class="fas fa-file-invoice"></i> Download Receipt
+                </a>
+                <a href="/shop/?checkout_complete=true" class="btn">Return to Menu</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store the order ID in session storage for receipt download
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we have order data in localStorage
+            const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+            if (orderHistory.length > 0) {
+                const latestOrder = orderHistory[0];
+                sessionStorage.setItem('latest_order_id', latestOrder.orderId);
+                
+                // Update the receipt download link
+                const receiptBtn = document.querySelector('.receipt-btn');
+                if (receiptBtn) {
+                    receiptBtn.href = "{% url 'managepayments:download_receipt' %}?order_id=" + latestOrder.orderId;
+                }
+            }
+        });
+    </script>
+    <style>
+        /* Add this to your existing CSS */
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.receipt-btn {
+    background-color: #4caf50;
+}
+
+.receipt-btn:hover {
+    background-color: #388e3c;
+}
+    </style>
+</body>
+</html>
