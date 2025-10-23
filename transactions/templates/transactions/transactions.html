@@ -1,0 +1,317 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions - Cafeteria Management</title>
+    <link rel="stylesheet" href="{% static 'transactions/transactions.css' %}">
+</head>
+<body>
+    {% csrf_token %}
+    <div class="wrapper">
+        <aside class="sidebar">
+            <h2>Cafeteria</h2>
+            <ul>
+                <li><a href="/dashboard/management/">Back to Dashboard</a></li>
+                <li><a href="/transactions/delivery-view/">Deliver to class</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>Transaction History</h1>
+                <div class="header-controls">
+                    <div class="search-container">
+                        <input type="text" id="searchInput" placeholder="Search orders...">
+                        <button id="clearSearch">✕</button>
+                    </div>
+                </div>
+
+                <!-- Add this clear cache button -->
+                <button id="clearCacheBtn" class="refresh-button" title="Clear cache and refresh data">
+                    <span>🔄 Refresh Data</span>
+                </button>
+
+                <!-- Transaction Details Modal -->
+                <div class="modal" id="detailsModal">
+                    <div class="modal-content">
+                        <h3>Order Details</h3>
+                        <div id="orderDetails">
+                            <!-- JS will populate details -->
+                        </div>
+                        
+                        <!-- Add status management section -->
+                        <div class="status-management">
+                            <h4>Manage Order Status</h4>
+                            <div class="status-controls">
+                                <select id="orderStatusSelect" class="status-select">
+                                    <option value="in_progress">Order in Progress</option>
+                                    <option value="successful">Order Successful</option>
+                                    <option value="cancelled">Order Cancelled</option>
+                                </select>
+                                <button id="updateStatusBtn" class="update-status-btn">Update Status</button>
+                            </div>
+                            <div id="statusUpdateMessage" class="status-message"></div>
+                        </div>
+                        
+                        <button type="button" id="closeDetailsModal">Close</button>
+                    </div>
+                </div>
+
+                <!-- Add Export Button with chart emoji and black text -->
+                <a href="/transactions/api/export/?filter=all" id="exportButton" class="export-button" style="text-decoration-color: black;">
+                    <span class="icon">⬇️</span>
+                    <span style="color: black;">Export to Excel</span>
+                </a>
+
+                <!-- Add this after your search input, before the table -->
+                <div class="filter-container">
+                    <label for="dateFilter">Filter by:</label>
+                    <select id="dateFilter" class="form-select">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">Last 7 Days</option>
+                        <option value="month">Last 30 Days</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+
+
+                    <!-- Replace the existing itemsCountFilter dropdown with this: -->
+                    <div class="items-count-control">
+                    <label for="itemsCountFilter">Show Items: <span id="itemsCountValue">5</span></label>
+                    <input type="range" id="itemsCountFilter" min="3" max="10" step="1" value="5" class="range-slider">
+                    </div>
+
+                    
+                    
+                    <div id="customDateRange" style="display: none;">
+                        <div class="input-group">
+                            <span class="input-group-text">From</span>
+                            <input type="date" id="startDate" class="form-control">
+                            <span class="input-group-text">To</span>
+                            <input type="date" id="endDate" class="form-control">
+                            <button id="applyCustomRange" class="btn btn-primary">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            
+
+            <!-- New Summary Statistics Section -->
+            <section class="stats-container">
+                <div class="stats-card">
+                    <h3>Total Transactions</h3>
+                    <p id="totalTransactions">0</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Total Revenue</h3>
+                    <p id="totalRevenue">₹0.00</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Average Order Value</h3>
+                    <p id="avgOrderValue">₹0.00</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Most Recent Order</h3>
+                    <p id="recentOrder">None</p>
+                </div>
+                <!-- Replace the existing list elements with these canvas elements -->
+
+            <div class="stats-card chart-card">
+                <h3>Least Sold Items</h3>
+                <div class="chart-container">
+                    <canvas id="leastItemsChart"></canvas>
+                </div>
+                <div id="leastItemsLegend" class="chart-legend"></div>
+            </div>
+            <div class="stats-card chart-card">
+                <h3>Top Sold Items</h3>
+                <div class="chart-container">
+                    <canvas id="topItemsChart"></canvas>
+                </div>
+                <div id="topItemsLegend" class="chart-legend"></div>
+            </div>
+            </section>
+
+
+            <section>
+                <div class="transactions-container">
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Student ID</th>
+                                <th>Date</th>
+                                <th>Total Amount</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTable">
+                            <!-- JS will populate rows -->
+                        </tbody>
+                    </table>
+                </div>
+
+
+            </section>
+        </main>
+    </div>
+
+    
+
+    <!-- Transaction Details Modal -->
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <h3>Order Details</h3>
+            <div id="orderDetails">
+                <!-- JS will populate details -->
+            </div>
+            <button type="button" id="closeDetailsModal">Close</button>
+        </div>
+    </div>
+
+    <script src="{% static 'transactions/transactions.js' %}"></script>
+    <!-- Add this before your existing script tag -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Add this inline script at the bottom of the page, before the closing </body> tag -->
+
+    <script>
+        // Optimized cache refresh function
+        function clearCacheAndReload() {
+            // Check if we need a selective refresh
+            const changedOrders = findChangedOrderStatuses();
+            
+            if (changedOrders.length > 0) {
+            // Show loading indicator
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'status-message info';
+            loadingDiv.textContent = `Refreshing ${changedOrders.length} updated orders...`;
+            document.querySelector('.transactions-container').prepend(loadingDiv);
+            
+            // Selectively refresh just the changed orders
+            refreshSpecificOrders(changedOrders)
+                .then(() => {
+                loadingDiv.className = 'status-message success';
+                loadingDiv.textContent = `Successfully updated ${changedOrders.length} orders`;
+                setTimeout(() => loadingDiv.remove(), 3000);
+                })
+                .catch(err => {
+                console.error("Error during selective refresh:", err);
+                // Fall back to full refresh if selective update fails
+                localStorage.clear();
+                window.location.reload();
+                });
+            } else {
+            // No specific orders to update, do a full refresh
+            localStorage.clear();
+            console.log('All localStorage data cleared');
+            window.location.reload();
+            }
+        }
+        
+        // Find orders that have status changes
+        function findChangedOrderStatuses() {
+            const changedOrders = [];
+            
+            // Look through localStorage for order status entries
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                // Look for keys matching pattern order_cms-XXXXXX_status
+                if (key && key.startsWith('order_CMS-') && key.endsWith('_status')) {
+                    const orderId = key.replace('order_', '').replace('_status', '');
+                    changedOrders.push(orderId);
+                }
+            }
+            
+            return changedOrders;
+        }
+        
+        {% comment %} function findChangedOrderStatuses() {
+            const changedOrders = [];
+            
+            // Look through localStorage for order status entries
+            for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            // Look for keys matching pattern order_lrv-cms-XXXXXX_status
+            if (key && key.startsWith('order_lrv-cms-') && key.endsWith('_status')) {
+                const orderId = key.replace('order_', '').replace('_status', '');
+                changedOrders.push(orderId);
+            }
+            }
+            
+            return changedOrders;
+        } {% endcomment %}
+        
+        // Refresh specific orders without reloading the page
+        async function refreshSpecificOrders(orderIds) {
+            // For each order ID, fetch updated data
+            const orderPromises = orderIds.map(async (orderId) => {
+            try {
+                const response = await fetch(`/transactions/api/details/${orderId}/`);
+                if (!response.ok) throw new Error(`Error fetching order ${orderId}`);
+                
+                const orderData = await response.json();
+                if (!orderData.success) throw new Error(orderData.error || 'Unknown error');
+                
+                // Update the order in the UI
+                updateOrderInUI(orderId, orderData.order);
+                
+                // Clear the status marker for this order
+                localStorage.removeItem(`order_${orderId}_status`);
+                
+                return orderData.order;
+            } catch (error) {
+                console.error(`Failed to refresh order ${orderId}:`, error);
+                throw error;
+            }
+            });
+            
+            return Promise.all(orderPromises);
+        }
+        
+        // Update a specific order in the UI
+        function updateOrderInUI(orderId, orderData) {
+            // Find the row for this order
+            const orderRow = document.querySelector(`tr[data-order-id="${orderId}"]`);
+            if (!orderRow) return;
+            
+            // Update status badge if present
+            const statusCell = orderRow.querySelector('.order-status');
+            if (statusCell) {
+            statusCell.textContent = getStatusDisplayText(orderData.status);
+            statusCell.className = `order-status status-${orderData.status}`;
+            }
+            
+            // Also update in the global allTransactions array
+            if (window.allTransactions) {
+            for (let i = 0; i < window.allTransactions.length; i++) {
+                if (window.allTransactions[i].order_id === orderId) {
+                window.allTransactions[i].status = orderData.status;
+                break;
+                }
+            }
+            }
+        }
+        
+        // Helper function to get display text for status
+        function getStatusDisplayText(status) {
+            switch(status) {
+            case 'successful': return 'SUCCESSFUL';
+            case 'in_progress': return 'IN PROGRESS';
+            case 'cancelled': return 'CANCELLED';
+            default: return status.toUpperCase().replace('_', ' ');
+            }
+        }
+        
+        // Also initialize the button if JavaScript is enabled but onclick doesn't work
+        document.addEventListener('DOMContentLoaded', function() {
+            const clearCacheBtn = document.getElementById('clearCacheBtn');
+            if (clearCacheBtn) {
+            clearCacheBtn.addEventListener('click', clearCacheAndReload);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,585 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Delivery Orders - Cafeteria Management</title>
+    <link rel="stylesheet" href="{% static 'transactions/transactions.css' %}">
+    <style>
+        .delivery-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            background-color: #e2f3f5;
+            color: #0e4e5c;
+        }
+        .delivery-details {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 12px;
+            margin: 15px 0;
+        }
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-in_transit { background-color: #cce5ff; color: #004085; }
+        .status-delivered { background-color: #d4edda; color: #155724; }
+        .status-failed { background-color: #f8d7da; color: #721c24; }
+        .status-returned { background-color: #e2e3e5; color: #383d41; }
+    </style>
+</head>
+<body>
+    {% csrf_token %}
+    <div class="wrapper">
+        <aside class="sidebar">
+            <h2>Cafeteria</h2>
+            <ul>
+                <li><a href="/dashboard/management/">Back to Dashboard</a></li>
+                <li><a href="/transactions/">All Transactions</a></li>
+                {% comment %} <li><a href="/transactions/delivery-view/" class="active">Classroom Deliveries</a></li> {% endcomment %}
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>Classroom Delivery Orders</h1>
+                <div class="header-controls">
+                    <div class="search-container">
+                        <input type="text" id="searchInput" placeholder="Search deliveries...">
+                        <button id="clearSearch">✕</button>
+                    </div>
+                </div>
+            </header>
+
+            <section>
+                <div class="transactions-container">
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Student ID</th>
+                                <th>Floor</th>
+                                <th>Classroom</th>
+                                <th>Delivery Time</th>
+                                <th>Status</th>
+                                <th>Mark as Successful</th>  <!-- New column -->
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deliveryOrdersTable">
+                            {% for delivery in delivery_orders %}
+                            <tr>
+                                <td>{{ delivery.order.order_id }}</td>
+                                <td>{{ delivery.order.student_id }}</td>
+                                <td>{{ delivery.floor_number }}</td>
+                                <td>{{ delivery.classroom }}</td>
+                                <td>{{ delivery.delivery_time }}</td>
+
+
+                                <!-- Replace the existing status cell code with this simplified version -->
+                                <td>
+                                    {% if delivery.status %}
+                                        <span class="delivery-badge status-{{ delivery.status }}">
+                                            {{ delivery.status|title }}
+                                        </span>
+                                    {% elif delivery.order.status == 'successful' %}
+                                        <span class="delivery-badge status-delivered">
+                                            Delivered
+                                        </span>
+                                    {% else %}
+                                        <span class="delivery-badge status-pending">Pending</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <input type="checkbox" class="success-checkbox" 
+                                        data-order-id="{{ delivery.order.order_id }}"
+                                        data-delivery-id="{{ delivery.id }}"
+                                        {% if delivery.order.status == 'successful' %}checked disabled{% endif %}>
+                                </td>
+                                <td>
+                                    <button class="view-details-btn" data-id="{{ delivery.order.order_id }}">
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="no-data">No classroom delivery orders found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <h3>Delivery Order Details</h3>
+            <div id="orderDetails">
+                <!-- JS will populate details -->
+            </div>
+            <button type="button" id="closeDetailsModal">Close</button>
+        </div>
+    </div>
+
+    <script>
+    /**
+     * Main initialization function that runs when the DOM is fully loaded
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize search functionality
+        initializeSearch();
+        
+        // Initialize order detail viewing
+        initializeOrderDetails();
+        
+        // Initialize checkbox functionality for marking orders as successful
+        initializeSuccessCheckboxes();
+
+        // Apply any stored status values from localStorage
+        applyStoredStatusValues();
+    });
+
+    /**
+    * Apply stored status values from localStorage to ensure persistence
+    * even across page refreshes
+    */
+    function applyStoredStatusValues() {
+        // Check all rows for stored status
+        document.querySelectorAll('.success-checkbox').forEach(checkbox => {
+            const orderId = checkbox.getAttribute('data-order-id');
+            if (!orderId) return;
+            
+            // Check if we have a stored status
+            const storedStatus = localStorage.getItem(`order_status_${orderId}`);
+            if (storedStatus === 'successful') {
+                // Get the row and status cell
+                const row = checkbox.closest('tr');
+                if (!row) return;
+                
+                const statusCell = row.querySelector('td:nth-child(6)');
+                if (!statusCell) return;
+                
+                // Apply the successful status
+                statusCell.innerHTML = `<span class="delivery-badge status-delivered">Delivered</span>`;
+                
+                // Update checkbox
+                checkbox.checked = true;
+                checkbox.disabled = true;
+            }
+        });
+    }
+    
+    /**
+     * Initialize search functionality
+     */
+    function initializeSearch() {
+        // Set up search input handler
+        document.getElementById('searchInput').addEventListener('input', handleSearch);
+        
+        // Set up clear search button
+        document.getElementById('clearSearch').addEventListener('click', clearSearch);
+    }
+    
+    /**
+     * Initialize order details functionality
+     */
+    function initializeOrderDetails() {
+        // Set up close button for details modal
+        document.getElementById('closeDetailsModal').addEventListener('click', closeDetailsModal);
+        
+        // Add event listeners to all "View Details" buttons
+        document.querySelectorAll('.view-details-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const orderId = this.getAttribute('data-id');
+                viewOrderDetails(orderId);
+            });
+        });
+    }
+    
+    /**
+     * Initialize checkboxes for marking orders as successful
+     */
+    function initializeSuccessCheckboxes() {
+        document.querySelectorAll('.success-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    const orderId = this.getAttribute('data-order-id');
+                    
+                    // Confirm before proceeding
+                    if (confirm('Are you sure you want to mark this order as successful?')) {
+                        updateOrderStatus(orderId, 'successful');
+                    } else {
+                        // Reset checkbox if user cancels
+                        this.checked = false;
+                    }
+                }
+            });
+        });
+    }
+    
+    /**
+     * Update order status via API call
+     * @param {string} orderId - The ID of the order to update
+     * @param {string} newStatus - The new status ('successful', 'cancelled', etc.)
+     */
+     async function updateOrderStatus(orderId, newStatus) {
+        try {
+            // Get CSRF token from cookie
+            const csrfToken = getCookie('csrftoken');
+            
+            if (!csrfToken) {
+                throw new Error('CSRF token not found. Please refresh the page and try again.');
+            }
+            
+            // Disable checkbox during processing
+            const checkbox = document.querySelector(`.success-checkbox[data-order-id="${orderId}"]`);
+            checkbox.disabled = true;
+            
+            // Get the delivery ID from the checkbox data attribute
+            const deliveryId = checkbox.getAttribute('data-delivery-id');
+            
+            // Update status display to show processing
+            const row = checkbox.closest('tr');
+            const statusCell = row.querySelector('td:nth-child(6)');
+            const originalStatusHtml = statusCell.innerHTML;
+            statusCell.innerHTML = `<span class="delivery-badge" style="background-color:#e2e3e5;">Updating...</span>`;
+            
+            // Send API request to update status - include delivery ID
+            const response = await fetch(`/transactions/api/update-status/${orderId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ 
+                    status: newStatus,
+                    delivery_id: deliveryId
+                })
+            });
+            
+            // Parse JSON response
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update status display to show success
+                statusCell.innerHTML = `<span class="delivery-badge status-delivered">Delivered</span>`;
+                
+                // Keep checkbox checked and disabled for successful orders
+                checkbox.checked = true;
+                checkbox.disabled = true;
+                
+                // Store the status in localStorage to ensure persistence even if backend has issues
+                localStorage.setItem(`order_status_${orderId}`, newStatus);
+                
+                // Optional: Show success message
+                const message = document.createElement('div');
+                message.textContent = 'Order updated successfully!';
+                message.className = 'success-message';
+                message.style.color = '#155724';
+                message.style.backgroundColor = '#d4edda';
+                message.style.padding = '8px';
+                message.style.borderRadius = '4px';
+                message.style.margin = '10px 0';
+                message.style.textAlign = 'center';
+                
+                // Insert message before table
+                const table = document.querySelector('.transactions-table');
+                table.parentNode.insertBefore(message, table);
+                
+                // Remove message after 3 seconds
+                setTimeout(() => {
+                    message.remove();
+                }, 3000);
+            } else {
+                // Restore original status on error
+                statusCell.innerHTML = originalStatusHtml;
+                
+                // Re-enable checkbox
+                checkbox.checked = false;
+                checkbox.disabled = false;
+                
+                throw new Error(data.error || 'Failed to update order status');
+            }
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            alert(`Error updating order status: ${error.message}`);
+            
+            // Re-enable checkbox on error
+            const checkbox = document.querySelector(`.success-checkbox[data-order-id="${orderId}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+                checkbox.disabled = false;
+            }
+        }
+    }
+     
+    
+    /**
+     * Filter table rows based on search input
+     */
+    function handleSearch() {
+        const searchText = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('#deliveryOrdersTable tr');
+        
+        rows.forEach(row => {
+            if (row.querySelector('td')) {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchText) ? '' : 'none';
+            }
+        });
+    }
+    
+    /**
+     * Clear search input and reset table display
+     */
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        handleSearch();
+    }
+    
+    /**
+     * Close the details modal
+     */
+    function closeDetailsModal() {
+        document.getElementById('detailsModal').style.display = 'none';
+    }
+    
+    /**
+     * Fetch order details from API and show modal
+     * @param {string} orderId - The ID of the order to fetch
+     */
+    async function viewOrderDetails(orderId) {
+        try {
+            // Show loading indicator in modal
+            const detailsDiv = document.getElementById('orderDetails');
+            detailsDiv.innerHTML = '<div class="loading">Loading order details...</div>';
+            document.getElementById('detailsModal').style.display = 'flex';
+            
+            // Fetch order details from API
+            const response = await fetch(`/transactions/api/details/${orderId}/`);
+            
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showDetailsModal(data.order);
+            } else {
+                throw new Error(data.error || 'Failed to load order details');
+            }
+        } catch (error) {
+            console.error('Error fetching order details:', error);
+            
+            // Show error in modal
+            const detailsDiv = document.getElementById('orderDetails');
+            detailsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+        }
+    }
+    
+    /**
+     * Display order details in modal
+     * @param {Object} order - The order object with all details
+     */
+    function showDetailsModal(order) {
+        const detailsDiv = document.getElementById('orderDetails');
+        
+        // Format date for display
+        const orderDate = new Date(order.date).toLocaleString();
+        
+        // Build basic order information HTML
+        let detailsHtml = `
+            <div class="detail-row" data-order-id="${order.order_id}">
+                <strong>Order ID:</strong> ${order.order_id}
+            </div>
+            <div class="detail-row">
+                <strong>Student ID:</strong> ${order.student_id}
+            </div>
+            <div class="detail-row">
+                <strong>Name:</strong> ${order.name || 'Not specified'}
+            </div>
+            <div class="detail-row">
+                <strong>Date:</strong> ${orderDate}
+            </div>
+            <div class="detail-row">
+                <strong>Payment Method:</strong> ${order.payment_method || 'Not specified'}
+            </div>
+            <div class="detail-row">
+                <strong>Status:</strong> 
+                <span class="delivery-badge status-${order.status || 'pending'}">
+                    ${(order.status || 'pending').charAt(0).toUpperCase() + (order.status || 'pending').slice(1)}
+                </span>
+            </div>
+        `;
+
+        // Update modal content
+        detailsDiv.innerHTML = detailsHtml;
+        
+        // IMPORTANT: Update the main table row to match the status from the API
+        updateTableRowStatus(order.order_id, order.status);
+        
+        // Add delivery information if available
+        if (order.delivery_info) {
+            detailsHtml += `
+                <div class="delivery-details">
+                    <h4>Delivery Information</h4>
+                    <div class="detail-row">
+                        <strong>Floor:</strong> ${order.delivery_info.floor_number}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Classroom:</strong> ${order.delivery_info.classroom}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Delivery Time:</strong> ${order.delivery_info.delivery_time}
+                    </div>
+                    ${order.delivery_info.delivery_notes ? 
+                        `<div class="detail-row">
+                            <strong>Notes:</strong> ${order.delivery_info.delivery_notes}
+                        </div>` : ''}
+                </div>
+            `;
+        }
+        
+        // Add order items table if available
+        if (order.items && order.items.length > 0) {
+            let itemsHtml = `
+                <h4>Order Items</h4>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            // Calculate total amount and build item rows
+            let totalAmount = 0;
+            order.items.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                totalAmount += itemTotal;
+                itemsHtml += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td>₹${item.price.toFixed(2)}</td>
+                        <td>₹${itemTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            // Add total row
+            itemsHtml += `
+                <tr class="total-row">
+                    <td colspan="3"><strong>Total</strong></td>
+                    <td><strong>₹${totalAmount.toFixed(2)}</strong></td>
+                </tr>
+                </tbody>
+            </table>
+            `;
+            
+            detailsHtml += itemsHtml;
+        } else {
+            detailsHtml += '<p>No items found for this order.</p>';
+        }
+        
+        // Update modal content
+        detailsDiv.innerHTML = detailsHtml;
+    }
+
+
+
+    /**
+    * Update the status display in the main table row
+    * @param {string} orderId - Order ID to update
+    * @param {string} status - New status value
+    */
+    function updateTableRowStatus(orderId, status) {
+        // Find the table row for this order
+        const checkbox = document.querySelector(`.success-checkbox[data-order-id="${orderId}"]`);
+        if (!checkbox) return;
+        
+        const row = checkbox.closest('tr');
+        if (!row) return;
+        
+        // Update the status cell (6th column)
+        const statusCell = row.querySelector('td:nth-child(6)');
+        if (!statusCell) return;
+        
+        // Format status for display
+        const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+        statusCell.innerHTML = `<span class="delivery-badge status-${status}">${statusText}</span>`;
+        
+        // Update checkbox state to match status
+        checkbox.checked = (status === 'successful');
+        checkbox.disabled = (status === 'successful');
+    }
+
+
+    // Add this to the closeDetailsModal function to ensure refresh on close
+    function closeDetailsModal() {
+        // Get the order ID from the modal before closing
+        const orderIdElement = document.querySelector('#orderDetails [data-order-id]');
+        if (orderIdElement) {
+            // Force a refresh of the status from the backend when closing
+            const orderId = orderIdElement.getAttribute('data-order-id');
+            refreshOrderStatus(orderId);
+        }
+        
+        // Hide the modal
+        document.getElementById('detailsModal').style.display = 'none';
+    }
+
+    /**
+    * Refresh an order's status from the backend
+    * @param {string} orderId - Order ID to refresh
+    */
+    async function refreshOrderStatus(orderId) {
+        try {
+            const response = await fetch(`/transactions/api/details/${orderId}/`);
+            if (!response.ok) return;
+            
+            const data = await response.json();
+            if (data.success && data.order) {
+                updateTableRowStatus(orderId, data.order.status);
+            }
+        } catch (error) {
+            console.error('Failed to refresh order status:', error);
+        }
+    }
+
+
+    
+    /**
+     * Helper function to get CSRF token from cookie
+     * @param {string} name - Cookie name
+     * @returns {string} Cookie value
+     */
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+</body>
+</html>
