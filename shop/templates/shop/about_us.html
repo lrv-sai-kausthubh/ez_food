@@ -1,0 +1,718 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About The Platform</title>
+    {% csrf_token %}
+
+    <!-- External CSS Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'shop/cafe.css' %}?v={% now 'U' %}">
+
+    <style>
+        /* ===== BASE STYLES ===== */
+        /* About page container */
+        .about-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #fff;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        
+        /* ===== HEADER SECTION ===== */
+        /* Main header styling */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Logo styling */
+        .logo {
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            color: var(--orange);
+            margin-right: 8px;
+        }
+        
+        /* Navigation menu */
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        /* Back to home link */
+        .nav-link {
+            text-decoration: none;
+            color: #333;
+            font-size: 1.2rem;
+            padding: 8px 15px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.7);
+            transition: 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .nav-link:hover {
+            color: var(--orange);
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* ===== ABOUT HEADER ===== */
+        .about-header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-top: 100px; /* Space for fixed header */
+        }
+        
+        .about-header h1 {
+            color: var(--orange);
+            font-size: 3.2rem;
+        }
+        
+        .about-header h1 span {
+            color: #333;
+        }
+        
+        /* ===== SOCIAL MEDIA LINKS ===== */
+        .social-link {
+            font-size: 1.4rem;
+            color: #333;
+            text-decoration: none;
+            transition: 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .social-link i {
+            margin-right: 8px;
+            font-size: 1.6rem;
+        }
+        
+        .social-link:hover {
+            color: var(--orange);
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Social icon specific colors */
+        .fa-linkedin { color: #0077b5; }
+        .fa-youtube { color: #ff0000; }
+        .fa-github { color: #333; }
+        
+        /* ===== CONTENT LAYOUT ===== */
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+        
+        /* Text areas */
+        .about-text {
+            line-height: 1.9;
+            font-size: 1.4rem;
+        }
+
+
+
+
+
+        /* Add this to the style section (around line 370) */
+        .about-text ul li {
+            font-size: 2.2rem; /* Increased from 1.2rem */
+            line-height: 2; /* Increased from 1.8 */
+            margin-bottom: 10px; /* Increased spacing between items */
+            font-weight: 800; /* Slightly bolder text */
+        }
+
+        /* Make bullets slightly larger and colorful */
+        .about-text ul {
+            list-style-type: disc;
+            color: var(--black);
+        }
+
+        /* Keep the text black while bullets remain colored */
+        .about-text ul li span {
+            color: #333;
+        }
+
+
+
+        
+        .about-text h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--orange);
+        }
+        
+        .about-text ul li {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .about-text strong {
+            font-size: 1.25rem;
+        }
+        
+        /* Image container */
+        .about-image {
+            text-align: center;
+            max-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .about-image img {
+            border-radius: 10px;
+            max-width: 100%;
+            max-height: 350px;
+            width: auto;
+            object-fit: contain;
+            box-shadow: none;
+        }
+        
+        /* ===== FEATURES SECTION ===== */
+        .project-features {
+            margin-top: 50px;
+            background-color: #f9f9f9;
+            padding: 30px;
+            border-radius: 8px;
+        }
+        
+        .project-features h2 {
+            color: var(--orange);
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 25px;
+        }
+        
+        .feature-item {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .feature-item h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .feature-item p {
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+        
+        .feature-item i {
+            color: var(--orange);
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+        
+        /* ===== VIDEO SECTION ===== */
+        .video-demo-section {
+            margin-top: 60px;
+            background-color: #f9f9f9;
+            padding: 30px;
+            border-radius: 8px;
+        }
+        
+        .video-demo-section h2 {
+            color: var(--orange);
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+        
+        .video-demo-section p {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+        
+        /* ===== FOOTER ===== */
+        .footer .credit {
+            font-size: 1.4rem;
+            padding: 20px 0;
+        }
+        
+        /* ===== RESPONSIVE DESIGN ===== */
+        /* Tablets and smaller desktops */
+        @media (max-width: 992px) {
+            .about-header h1 {
+                font-size: 2.8rem;
+            }
+            
+            .feature-list {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+        
+        /* Tablets and large phones */
+        @media (max-width: 768px) {
+            /* Header layout - FIXED to keep elements side by side */
+            .header {
+                padding: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+            
+            .logo {
+                margin-right: 20px;
+            }
+            
+            /* Social links - FIXED to display side by side */
+            .nav-menu {
+                display: flex;
+                flex-direction: row; /* Changed from column to row */
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+                width: auto; /* Changed from 100% */
+            }
+            
+            /* Back to home button - Made visible */
+            .nav-link {
+                margin: 5px;
+                width: auto;
+                padding: 8px 10px;
+                font-size: 1.2rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Hide text on mobile, keep only icon (like social links) */
+            .nav-link span {
+                display: none;
+            }
+            
+            .nav-link i {
+                margin-right: 0;
+                font-size: 1.4rem;
+                color: var(--orange); /* Match your theme color */
+            }
+
+            
+            /* Social links - Made smaller but kept side by side */
+            .social-link {
+                margin: 5px;
+                width: auto; /* Changed from 85% */
+                padding: 8px 10px;
+                font-size: 1.2rem;
+            }
+            
+            /* Hide text on mobile, keep only icons */
+            .social-link span {
+                display: none;
+            }
+            
+            .social-link i {
+                margin-right: 0;
+                font-size: 1.4rem;
+            }
+            
+            /* Content adjustments */
+            .about-container {
+                padding: 20px 15px;
+                margin: 20px 10px;
+            }
+            
+            /* Fixed header spacing - REDUCED to improve visibility */
+            .about-header {
+                padding-top: 110px; /* Reduced from 170px */
+            }
+            
+            .about-header h1 {
+                font-size: 2.5rem;
+            }
+            
+            /* Make title more compact on mobile */
+            .about-header h1 span {
+                display: block;
+                margin-top: 5px;
+            }
+            
+            /* Single column layout for content */
+            .about-content {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Move image to top on mobile */
+            .about-image {
+                order: -1;
+            }
+            
+            /* Single column for features */
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Smaller text on mobile */
+            .about-text, 
+            .about-text ul li,
+            .feature-item p,
+            .video-demo-section p {
+                font-size: 1.1rem;
+            }
+            
+            /* Footer adjustments */
+            .footer {
+                padding: 15px;
+            }
+            
+            .footer .credit {
+                font-size: 1.2rem;
+            }
+        }
+        
+        /* Small phones */
+        @media (max-width: 480px) {
+            /* More compact header */
+            .header {
+                padding: 10px 5px;
+            }
+            
+            /* Further reduced title size */
+            .about-header h1 {
+                font-size: 2rem;
+            }
+            
+            /* Smaller headings */
+            .about-text h2,
+            .project-features h2,
+            .video-demo-section h2 {
+                font-size: 1.6rem;
+            }
+            
+            /* Smaller social icons */
+            .social-link {
+                padding: 6px 8px;
+            }
+            
+            .social-link i {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* Animation for feature items appearing */
+        .feature-hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .feature-hidden.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Stagger the animations */
+        .feature-item:nth-child(1) { transition-delay: 0.2s; }
+        .feature-item:nth-child(2) { transition-delay: 0.3s; }
+        .feature-item:nth-child(3) { transition-delay: 0.4s; }
+        .feature-item:nth-child(4) { transition-delay: 0.5s; }
+        .feature-item:nth-child(5) { transition-delay: 0.6s; }
+        .feature-item:nth-child(6) { transition-delay: 0.7s; }
+        
+
+
+        /* Add this to your existing CSS in the style section */
+        .about-text ul {
+            padding-left: 40px; /* Creates one tab indentation */
+            margin-left: 20px; /* Additional spacing from the left margin */
+        }
+
+        /* Adjust responsive styles for mobile if needed */
+        @media (max-width: 768px) {
+            .about-text ul {
+                padding-left: 30px; /* Slightly less indentation on mobile */
+                margin-left: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <a href="{% url 'shop:cafe' %}" class="logo">
+            <i class="fas fa-utensils"></i> <strong>EZ FOOD</strong>
+        </a>
+        <div class="nav-menu">
+            <a href="{% url 'shop:cafe' %}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Back to Home</span>
+            </a>
+
+
+            <a href="https://www.linkedin.com/in/lrv-sai-kausthubh/" target="_blank" class="social-link" title="Connect on LinkedIn">
+                <i class="fab fa-linkedin"></i> LinkedIn
+            </a>
+            <a href="https://www.youtube.com/@k7h26" target="_blank" class="social-link" title="Subscribe on YouTube">
+                <i class="fab fa-youtube"></i> YouTube
+            </a>
+            {% comment %} <a href="https://github.com/your-username" target="_blank" class="social-link" title="Follow on GitHub">
+                <i class="fab fa-github"></i> GitHub
+            </a> {% endcomment %}
+        </div>
+    </header>
+
+    <section class="about-header">
+        <h1> <span></span></h1>
+    </section>
+
+    <div class="about-container">
+        <div class="about-content">
+            <div class="about-text">
+                <h2>About Me & My Platform</h2>
+                <p class="about-text">
+                    Hello! I'm Lrv Sai Kausthubh, the developer behind the Cafeteria Management System. 
+                    I love creating technology solutions that solve real-world problems.
+                </p>    <br>
+                
+                <p class="about-text">
+                    I wanted to create a system that makes food ordering simple and efficient 
+                    for both customers and cafeteria staff.
+                </p><br>
+                
+                
+                <h2>Why I Built This?</h2>
+                <p class="about-text">
+                    I noticed the long queues and waiting times at our cafeteria, and realized 
+                    that a digital solution could greatly improve the experience for everyone. This 
+                    platform was created to:
+                </p><br>
+                
+                <ul>
+                    <li><span>Reduce waiting times for students and staff</span></li>
+                    <li><span>Simple online ordering process</span></li>
+                    <li><span>Provide better inventory management for the cafeteria</span></li>
+                    <li><span>Create a platform for easy menu updates and special offers</span></li>
+                </ul>
+            </div>
+            
+            
+            <div class="about-image">
+                <img src="{% static 'shop/images/freepik__background__97907.png' %}" alt="About NIAT CMS">
+            </div>
+        </div>
+        
+        <div class="project-features">
+            <h2>Key Features</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h3>Simple Shopping Cart</h3>
+                    <p>Intuitive shopping experience with real-time updates</p>
+                </div>
+                
+                <div class="feature-item">
+                    <i class="fas fa-credit-card"></i>
+                    <h3>Multiple Payment Options</h3>
+                    <p>Secure payment processing with various payment methods</p>
+                </div>
+                
+                <div class="feature-item">
+                    <i class="fas fa-history"></i>
+                    <h3>Order History & Tracking</h3>
+                    <p>Complete visibility into order status and history</p>
+                </div>
+                
+                
+                <div class="feature-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>Analytics Dashboard</h3>
+                    <p>Track performance metrics and export detailed reports to Improve operations</p>
+                </div>
+                
+                <div class="feature-item">
+                    <i class="fas fa-bell"></i>
+                    <h3>Live Quantity Updates</h3>
+                    <p>Get Real Time information on how many items are left in stock</p>
+                </div>
+
+
+                <div class="feature-item">
+                    <i class="fas fa-envelope"></i>
+                    <h3>Gmail Parsing</h3>
+                    <p>Scans your gmail for order id and if it matches, It will automitacally update the order status</p>
+                </div>
+
+                
+
+                
+            </div>
+        </div>
+        
+
+
+        <!-- Add this after the Technical Implementation section -->
+        {% comment %} <div class="video-demo-section">
+            <h2>See It In Action</h2>
+            <p>Watch a quick demo of the Cafeteria Management System:</p>
+            
+            <div class="video-container">
+                <iframe 
+                    src="https://www.youtube.com/@k7h26" 
+                    title="Cafeteria Management System Demo" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+        </div> {% endcomment %}
+
+
+    </div>
+
+
+    <!-- At the bottom, replace the footer include with a simple footer -->
+    <section class="footer">
+        <div class="credit">built with ❤️ by <span>Lrv Sai Kausthubh</span></div>
+    </section>
+
+    <!-- Scripts section similar to cafe.html -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="{% static 'shop/cafe.js' %}"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Performance optimization script
+        
+        // 1. Lazy load images that are not in the initial viewport
+        const lazyImages = document.querySelectorAll('.about-image img, .feature-item img');
+        
+        if ('loading' in HTMLImageElement.prototype) {
+            // Browser supports native lazy loading
+            lazyImages.forEach(img => {
+                img.loading = 'lazy';
+            });
+        } else {
+            // Fallback for browsers that don't support native lazy loading
+            const lazyImageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const lazyImage = entry.target;
+                        lazyImage.src = lazyImage.dataset.src;
+                        lazyImage.classList.remove('lazy');
+                        observer.unobserve(lazyImage);
+                    }
+                });
+            });
+            
+            lazyImages.forEach(img => {
+                lazyImageObserver.observe(img);
+            });
+        }
+        
+        // 2. Defer loading of the YouTube iframe until user scrolls near it
+        const videoContainer = document.querySelector('.video-container');
+        const videoIframe = document.querySelector('.video-container iframe');
+        
+        if (videoContainer && videoIframe) {
+            const videoSrc = videoIframe.src;
+            videoIframe.removeAttribute('src'); // Remove src to prevent loading
+            
+            const videoObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        videoIframe.setAttribute('src', videoSrc);
+                        videoObserver.unobserve(entry.target);
+                    }
+                });
+            }, { rootMargin: '200px' }); // Load when within 200px of viewport
+            
+            videoObserver.observe(videoContainer);
+        }
+        
+        // 3. Progressive enhancement for feature items
+        const featureItems = document.querySelectorAll('.feature-item');
+        const featureObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    featureObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        featureItems.forEach(item => {
+            item.classList.add('feature-hidden'); // Initially hide features
+            featureObserver.observe(item);
+        });
+        
+        // 4. Preload critical resources
+        const preloadLinks = [
+            { rel: 'preconnect', href: 'https://cdnjs.cloudflare.com' },
+            { rel: 'preconnect', href: 'https://www.youtube.com' }
+        ];
+        
+        preloadLinks.forEach(linkData => {
+            const link = document.createElement('link');
+            link.rel = linkData.rel;
+            link.href = linkData.href;
+            document.head.appendChild(link);
+        });
+    });
+</script>
+
+
+</body>
+</html>

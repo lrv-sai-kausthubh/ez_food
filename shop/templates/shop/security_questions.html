@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Questions</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'shop/login.css' %}">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .wrapper {
+      position: relative;
+      width: 400px;
+      background: rgba(255, 255, 255, .2);
+      border-radius: 20px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, .1);
+      padding: 40px;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 30px;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .question {
+      color: #fff;
+      font-size: 16px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 25px;
+      text-align: left;
+      border-left: 3px solid #0ef;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 30px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 10px;
+      outline: none;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    .input-group label {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: #fff;
+      pointer-events: none;
+      transition: .5s;
+    }
+
+    .input-group input:focus ~ label,
+    .input-group input:valid ~ label {
+      top: -5px;
+      font-size: 12px;
+      background: rgba(0, 0, 0, .2);
+      padding: 0 5px;
+    }
+
+    button {
+      width: 100%;
+      height: 45px;
+      border-radius: 50px;
+      background: #fff;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: .5s;
+      margin-bottom: 15px;
+    }
+
+    button:hover {
+      background: #0ef;
+    }
+
+    .signUp-link {
+      text-align: center;
+    }
+
+    .signUp-link p {
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .signUp-link p a {
+      color: #0ef;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .error {
+      color: #ff4444;
+      text-align: center;
+      background: rgba(255, 0, 0, .1);
+      padding: 8px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="form-wrapper sign-in">
+      <form method="post">
+        {% csrf_token %}
+        <h2>Security Question {{ question_number }}</h2>
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+        
+        <p class="question">{{ question }}</p>
+        
+        <div class="input-group">
+          {{ form.answer }}
+          <label for="{{ form.answer.id_for_label }}">Your Answer</label>
+        </div>
+        
+        <button type="submit">Verify</button>
+        <div class="signUp-link">
+          <p><a href="{% url 'shop:forgot_password' %}">Try different account</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

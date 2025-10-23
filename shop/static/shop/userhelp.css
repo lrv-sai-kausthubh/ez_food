@@ -1,0 +1,275 @@
+/* ChatGPT-style layout */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background-color: #343541;
+    color: #d1d5db;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Sidebar styling */
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background-color: #202123;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #4d4d4f;
+}
+
+.sidebar-header {
+    padding: 16px;
+    border-bottom: 1px solid #4d4d4f;
+}
+
+.logo {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+}
+
+.logo i {
+    margin-right: 10px;
+    color: #10a37f;
+}
+
+.sidebar-options {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.new-chat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #10a37f;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    width: 100%;
+    text-align: left;
+}
+
+.sidebar-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    color: #d1d5db;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+.sidebar-item:hover {
+    background-color: #2a2b32;
+}
+
+.sidebar-item.active {
+    background-color: #343541;
+}
+
+.sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid #4d4d4f;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: #2a2b32;
+    color: #d1d5db;
+    text-decoration: none;
+    border-radius: 6px;
+    width: 100%;
+}
+
+.back-button:hover {
+    background-color: #40414f;
+}
+
+/* Main content area */
+.main-content {
+    flex: 1;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.chat-header {
+    padding: 16px;
+    text-align: center;
+    border-bottom: 1px solid #4d4d4f;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 0;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+/* Message styling */
+.message-row {
+    display: flex;
+    padding: 24px 16px;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.bot-row {
+    background-color: #444654;
+}
+
+.user-row {
+    background-color: #343541;
+}
+
+.avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.bot-avatar {
+    background-color: #10a37f;
+    color: white;
+}
+
+.user-avatar {
+    background-color: #7c3aed;
+    color: white;
+}
+
+.message {
+    max-width: 90%;
+    line-height: 1.6;
+    font-size: 16px;
+    overflow-wrap: break-word;
+}
+
+/* Input area styling */
+.chat-input-container {
+    padding: 16px;
+    background-color: #343541;
+    border-top: 1px solid #4d4d4f;
+    margin-top: auto;
+}
+
+.chat-input-wrapper {
+    display: flex;
+    border: 1px solid #565869;
+    border-radius: 8px;
+    padding: 8px 16px;
+    background-color: #40414f;
+}
+
+#userInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #d1d5db;
+    font-size: 16px;
+    padding: 8px 0;
+    outline: none;
+}
+
+.send-button {
+    background: transparent;
+    border: none;
+    color: #10a37f;
+    cursor: pointer;
+    padding: 0 8px;
+    font-size: 20px;
+}
+
+.chat-input-footer {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #8e8ea0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    
+    .chat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    /* .chat-header:before {
+        content: "\f0c9";
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        cursor: pointer;
+    } */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* Make home icon white in all cases */
+.mobile-home-link {
+    color: #ffffff !important;
+}
+
+.mobile-home-link i {
+    color: #ffffff !important;
+}
+
+/* On hover, keep it white but maybe add a subtle effect */
+.mobile-home-link:hover {
+    color: #ffffff !important;
+    opacity: 0.8;
+}
+
+
+/* Only show first 2 suggestion chips on mobile */
+@media (max-width: 768px) {
+    .suggestion-chips .suggestion-chip:nth-child(n+3) {
+        display: none;
+    }
+}
+
+

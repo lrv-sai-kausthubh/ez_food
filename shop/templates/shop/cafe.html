@@ -1,0 +1,625 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Food Zone</title>
+    {% csrf_token %}
+
+    <!-- External CSS Libraries -->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'shop/cafe.css' %}?v={% now 'U' %}">
+    <style>
+        /* Force alignment for mobile icons */
+        @media (max-width: 768px) {
+            /* Fix nav-menu container */
+            .nav-menu {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-end !important;
+                gap: 15px !important; /* Consistent gap */
+            }
+            
+            /* Target both icons with ultra-specific selectors */
+            .icon#cart-btn, 
+            .icon#menu-btn {
+                width: 40px !important;
+                height: 40px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #f8f8f8 !important;
+                border-radius: 6px !important;
+                text-align: center !important;
+                vertical-align: middle !important;
+            }
+            
+            /* Fix icon positioning */
+            .icon#cart-btn i, 
+            .icon#menu-btn i {
+                font-size: 18px !important;
+                line-height: 1 !important;
+                margin: auto !important;
+            }
+            
+            /* Adjust badge position */
+            .cart-count {
+                position: absolute !important;
+                top: -5px !important;
+                right: -5px !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ====== HEADER SECTION ====== -->
+    <header class="header">
+        <!-- Logo -->
+        <a href="#" class="logo">
+            <i class="fas fa-utensils"></i> <strong>EZ FOOD</strong>
+        </a>
+
+        <!-- Navigation Links -->
+        <div class="nav-menu">
+            <!-- Desktop Navigation Text Links -->
+            <a href="#home" class="nav-link">Home</a>
+            <a href="#packages" class="nav-link">Menu</a>
+            
+            <a href="{% url 'shop:userhelp' %}" class="nav-link">Help</a>
+            
+            <!-- Username Dropdown -->
+            <div class="user-dropdown">
+                <a href="javascript:void(0)" class="dropdown-toggle">
+                    Hello, <span id="nav-username"></span> <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="dropdown-menu">
+                    <a href="{% url 'users:profile' %}">Profile</a>
+                    <a href="{% url 'shop:about_us' %}" class="nav-link">About The Platform</a>
+                    <a href="{% url 'shop:order_history' %}">Order History</a>
+                    {% comment %} <a href="{% url 'dashboard:management' %}">Management</a> {% endcomment %}
+                    <a href="{% url 'shop:shop_logout' %}">Logout</a>
+                </div>
+            </div>
+            
+            <!-- Cart Icon (Always visible) -->
+            <a id="cart-btn" class="icon" title="Your Cart">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+            </a>
+
+            <!-- Mobile Menu Toggle -->
+            <div class="icon" id="menu-btn"><i class="fas fa-bars"></i></div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <nav class="navbar">
+            <span class="navbar-close">&times;</span>
+            <a href="#home">Home</a>
+            <a href="#packages">Menu</a>
+            <a href="{% url 'shop:about_us' %}">About Us</a>
+            <a href="{% url 'shop:userhelp' %}">Help</a>
+            
+            <!-- User account links with separator -->
+            <div class="menu-separator"></div>
+            <a href="{% url 'users:profile' %}" class="user-link">
+                <i class="fas fa-user"></i> Profile
+            </a>
+            <a href="{% url 'shop:order_history' %}" class="user-link">
+                <i class="fas fa-history"></i> Order History
+            </a>
+            <a href="{% url 'shop:shop_logout' %}" class="user-link logout-link">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+    </header>
+    <!-- ====== END HEADER SECTION ====== -->
+
+    <!-- ====== CART SIDEBAR ====== -->
+    <div class="cart-sidebar">
+        <button class="close-cart">×</button>
+        <h2>Your Cart</h2>
+        <div class="cart-items">
+            <!-- Cart items will be dynamically injected here via JavaScript -->
+        </div>
+        <div class="cart-total">
+            Total: <span>0</span>
+        </div>
+        <!-- change the below button so that it links properly with checkout.html-->
+        <a href="{% url 'managepayments:checkout' %}" class="checkout-btn btn">Checkout</a>
+        {% comment %} <button class="checkout-btn btn">Checkout</button> {% endcomment %}
+    </div>
+    <!-- ====== END CART SIDEBAR ====== -->
+
+    <!-- ====== HOME SECTION ====== -->
+    <section class="home" id="home">
+        <div class="image" data-aos="fade-down">
+            <img src= " {% static 'shop/images/freepik__background__97907.png' %}" alt="Food ordering background" />
+        </div>
+        <div class="content" data-aos="fade-up">
+            <h3>Simply Order Food</h3>
+            <p>Tired of waiting in line to get your food?</p>
+            <p>Place your order here & simplify your experience</p>
+            <a href="#packages" class="btn">Explore Now</a>
+        </div>
+    </section>
+    <!-- ====== END HOME SECTION ====== -->
+
+    <!-- ====== MENU SECTION ====== -->
+    <section class="packages" id="packages">
+        <h1 class="heading">our <span>Menu</span></h1>
+
+        <!-- Snacks Category -->
+        <div class="menu-category">
+            <h2>Snacks / Food</h2>
+            <div class="swiper snacks-slider">
+                <div class="swiper-wrapper">
+                    <!-- Samosa Item -->
+                    <div class="swiper-slide">
+                        <div class="box">
+                            <div class="image">
+                                <img src="{% static 'shop/images/samosha.jpg' %}" alt="Samosa" />
+                                <h3><i class="fas fa-utensils"></i> Samosa</h3>
+                            </div>
+                            <div class="content">
+                                <div class="price">₹25 <span>₹30</span></div>
+                                <p>little pocket of fried dough filled with potato and peas.</p>
+                                <button class="btn add-to-cart" data-item-id="samosa">Add to Cart</button>
+                                <div class="cart-item-controls" data-item-id="samosa" style="display: none;">
+                                    <button class="quantity-decrease">-</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-increase">+</button>
+                                    <button class="remove-item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+
+                    <!-- Kachori Item -->
+                    <div class="swiper-slide">
+                        <div class="box">
+                            <div class="image">
+                                <img src="{% static 'shop/images/kachori.jpg' %}" alt="Kachori" />
+                                <h3><i class="fas fa-utensils"></i> Kachori</h3>
+                            </div>
+                            <div class="content">
+                                <div class="price">₹25 <span>₹30</span></div>
+                                <p>fried pastry filled with savory ingredients like lentils, potatoes, or spices. </p>
+                                <button class="btn add-to-cart" data-item-id="kachori">Add to Cart</button>
+                                <div class="cart-item-controls" data-item-id="kachori" style="display: none;">
+                                    <button class="quantity-decrease">-</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-increase">+</button>
+                                    <button class="remove-item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Veg Biryani Item -->
+                    <div class="swiper-slide">
+                        <div class="box">
+                            <div class="image">
+                                <img src="{% static 'shop/images/veg biryani.jpg' %}" alt="Veg Biryani" />
+                                <h3><i class="fas fa-utensils"></i> Veg Biryani</h3>
+                            </div>
+                            <div class="content">
+                                <div class="price">₹90 <span>₹120</span></div>
+                                <p>A flavorful & comforting dish, packed with aromatic spices, mixed vegetables, & basmati rice,</p>
+                                <button class="btn add-to-cart" data-item-id="veg_biryani">Add to Cart</button>
+                                <div class="cart-item-controls" data-item-id="veg_biryani" style="display: none;">
+                                    <button class="quantity-decrease">-</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-increase">+</button>
+                                    <button class="remove-item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lays Item -->
+                    <div class="swiper-slide">
+                        <div class="box">
+                            <div class="image">
+                                <img src="{% static 'shop/images/layzzz.jpg' %}" alt="Lays" />
+                                <h3><i class="fas fa-utensils"></i> Lays</h3>
+                            </div>
+                            <div class="content">
+                                <div class="price">₹25 <span>₹30</span></div>
+                                <p>A popular chips brand, known for its crispy texture & diverse flavors." </p>
+                                <button class="btn add-to-cart" data-item-id="lays">Add to Cart</button>
+                                <div class="cart-item-controls" data-item-id="lays" style="display: none;">
+                                    <button class="quantity-decrease">-</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-increase">+</button>
+                                    <button class="remove-item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <!-- Snacks Slider Navigation -->
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </div>
+
+        <!-- Drinks Category -->
+        <div class="menu-category">
+            <h2>Drinks</h2>
+            <div class="swiper drinks-slider">
+                <div class="swiper-wrapper">
+                    <!-- Coca Cola Item -->
+                    <div class="swiper-slide">
+                        <div class="box">
+                            <div class="image">
+                                <img src="{% static 'shop/images/also coke.jpg' %}" alt="Coca Cola" />
+                                <h3><i class="fas fa-utensils"></i> Coca Cola</h3>
+                            </div>
+                            <div class="content">
+                                <div class="price">₹25 <span>₹30</span></div>
+                                <p>Coca-Cola is a global soft drink brand known for its iconic contour bottle and refreshing taste.</p>
+                                <button class="btn add-to-cart" data-item-id="coca_cola">Add to Cart</button>
+                                <div class="cart-item-controls" data-item-id="coca_cola" style="display: none;">
+                                    <button class="quantity-decrease">-</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-increase">+</button>
+                                    <button class="remove-item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Sprite Item -->
+                    <div class="swiper-slide">
+                        <div class="box">
+                            <div class="image">
+                                <img src="{% static 'shop/images/sprite can.jpg' %}" alt="Sprite" />
+                                <h3><i class="fas fa-utensils"></i> Sprite</h3>
+                            </div>
+                            <div class="content">
+                                <div class="price">₹25 <span>₹30</span></div>
+                                <p>Sprite is a clear, lemon-lime flavored soft drink created by the Coca-Cola Company.</p>
+                                <button class="btn add-to-cart" data-item-id="sprite">Add to Cart</button>
+                                <div class="cart-item-controls" data-item-id="sprite" style="display: none;">
+                                    <button class="quantity-decrease">-</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-increase">+</button>
+                                    <button class="remove-item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Thumbs Up Item -->
+                    <div class="swiper-slide">
+                        <div class="box">
+                            <div class="image">
+                                <img src="{% static 'shop/images/thumbs up can.jpg' %}" alt="Thumbs Up" />
+                                <h3><i class="fas fa-utensils"></i> Thumbs Up</h3>
+                            </div>
+                            <div class="content">
+                                <div class="price">₹25 <span>₹30</span></div>
+                                <p>Thums Up is a popular Indian cola, known for its unique spicy taste and enduring brand legacy.</p>
+                                <button class="btn add-to-cart" data-item-id="thumbs_up">Add to Cart</button>
+                                <div class="cart-item-controls" data-item-id="thumbs_up" style="display: none;">
+                                    <button class="quantity-decrease">-</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-increase">+</button>
+                                    <button class="remove-item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Monster Item -->
+                    <div class="swiper-slide">
+                        <div class="box">
+                            <div class="image">
+                                <img src="{% static 'shop/images/monster.jpg' %}" alt="Monster" />
+                                <h3><i class="fas fa-utensils"></i> Monster</h3>
+                            </div>
+                            <div class="content">
+                                <div class="price">₹25 <span>₹30</span></div>
+                                <p>Monster Energy is a brand of energy drinks. there are over 150 different flavors worldwide</p>
+                                <button class="btn add-to-cart" data-item-id="monster">Add to Cart</button>
+                                <div class="cart-item-controls" data-item-id="monster" style="display: none;">
+                                    <button class="quantity-decrease">-</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-increase">+</button>
+                                    <button class="remove-item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Drinks Slider Navigation -->
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </div>
+    
+        <!-- Desserts Category -->
+        <div class="menu-category">
+            <h2>Desserts</h2>
+            <div class="swiper desserts-slider">
+                <div class="swiper-wrapper">
+                    <!-- Chocolate Brownie Item -->
+                    <div class="swiper-slide">
+                        <div class="box">
+                            <div class="image">
+                                <img src="{% static 'shop/images/choclate brownie.jpg' %}" alt="Chocolate Brownie" />
+                                <h3><i class="fas fa-utensils"></i> Chocolate Brownie</h3>
+                            </div>
+                            <div class="content">
+                                <div class="price">₹25 <span>₹30</span></div>
+                                <p>A chocolate brownie is a rich, fudgy, and delicious baked dessert bar.</p>
+                                <button class="btn add-to-cart" data-item-id="chocolate_brownie">Add to Cart</button>
+                                <div class="cart-item-controls" data-item-id="chocolate_brownie" style="display: none;">
+                                    <button class="quantity-decrease">-</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-increase">+</button>
+                                    <button class="remove-item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cake Item -->
+                    <div class="swiper-slide">
+                        <div class="box">
+                            <div class="image">
+                                <img src="{% static 'shop/images/also cake.jpg' %}" alt="Cake" />
+                                <h3><i class="fas fa-utensils"></i> Cake</h3>
+                            </div>
+                            <div class="content">
+                                <div class="price">₹25 <span>₹30</span></div>
+                                <p>Cake: a sweet, baked confection enjoyed as a dessert or celebratory treat. </p>
+                                <button class="btn add-to-cart" data-item-id="cake">Add to Cart</button>
+                                <div class="cart-item-controls" data-item-id="cake" style="display: none;">
+                                    <button class="quantity-decrease">-</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-increase">+</button>
+                                    <button class="remove-item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chocolava Cake Item -->
+                    <div class="swiper-slide">
+                        <div class="box">
+                            <div class="image">
+                                <img src="{% static 'shop/images/clc.jpg' %}" alt="Chocolava Cake" />
+                                <h3><i class="fas fa-utensils"></i> Chocolava Cake</h3>
+                            </div>
+                            <div class="content">
+                                <div class="price">₹25 <span>₹30</span></div>
+                                <p>A French dessert that consists of a chocolate cake with a liquid chocolate core</p>
+                                <button class="btn add-to-cart" data-item-id="chocolava_cake">Add to Cart</button>
+                                <div class="cart-item-controls" data-item-id="chocolava_cake" style="display: none;">
+                                    <button class="quantity-decrease">-</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-increase">+</button>
+                                    <button class="remove-item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gulab Jamun Item -->
+                    <div class="swiper-slide">
+                        <div class="box">
+                            <div class="image">
+                                <img src="{% static 'shop/images/gulab jamun.png' %}" alt="Gulab Jamun" />
+                                <h3><i class="fas fa-utensils"></i> Gulab Jamun</h3>
+                            </div>
+                            <div class="content">
+                                <div class="price">₹25 <span>₹30</span></div>
+                                <p>Gulab jamun is a popular Indian milk-solid-based sweet, traditionally made with milk solids</p>
+                                <button class="btn add-to-cart" data-item-id="gulab_jamun">Add to Cart</button>
+                                <div class="cart-item-controls" data-item-id="gulab_jamun" style="display: none;">
+                                    <button class="quantity-decrease">-</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-increase">+</button>
+                                    <button class="remove-item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Desserts Slider Navigation -->
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </div>
+    </section>
+    <!-- ====== END MENU SECTION ====== -->
+
+    <!-- ====== TOAST NOTIFICATION ====== -->
+    <div id="toast" class="toast">Item added to cart</div>
+    <!-- ====== END TOAST NOTIFICATION ====== -->
+
+    <!-- ====== ORDER HISTORY SECTION ====== -->
+    {% comment %} <section class="order-history" id="order-history">
+        <h1 class="heading"><span>Your</span> Order History</h1>
+        <!-- Orders will dynamically show here -->
+        <div class="orders-container">
+            <p class="empty-history-text">No previous orders found. Start adding delicious treats to your cart!</p>
+        </div>
+    </section> {% endcomment %}
+    <!-- ====== END ORDER HISTORY SECTION ====== -->
+
+    <!-- ====== FUN FACTS SECTION ====== -->
+    <section class="blogs" id="blogs">
+        <h1 class="heading"><span>Fun</span> Facts</h1>
+    
+        <!-- Fun Facts Slider -->
+        <div class="swiper funfacts-slider">
+            <div class="swiper-wrapper">
+                <!-- Fun Fact 1 -->
+                <div class="swiper-slide">
+                    <div class="box" data-aos="fade-up">
+                        <div class="image">
+                            <img src="{% static 'shop/images/ayurveda.jpg' %}" alt="Fun Fact 1">
+                        </div>
+                        <div class="content">
+                            <h3>Spices the Heart of Ayurveda</h3>
+                            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3252722/" class="btn" target="_blank">read more</a>
+                            <div class="icons">
+                                <a href="#">
+                                    <i class="fas fa-calendar"></i> 1st jan, 2025
+                                </a>
+                                <a href="#">
+                                    <i class="fas fa-user"></i> by Lrv
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+                <!-- Fun Fact 2 -->
+                <div class="swiper-slide">
+                    <div class="box" data-aos="fade-up">
+                        <div class="image">
+                            <img src="{% static 'shop/images/indiansweets.jpg' %}" alt="Fun Fact 2">
+                        </div>
+                        <div class="content">
+                            <h3>Indian Sweets Vary by Region</h3>
+                            <a href="https://en.wikipedia.org/wiki/List_of_Indian_sweets_and_desserts" class="btn" target="_blank">read more</a>
+                            <div class="icons">
+                                <a href="#">
+                                    <i class="fas fa-calendar"></i> 1st Feb, 2025
+                                </a>
+                                <a href="#">
+                                    <i class="fas fa-user"></i> by Human 1
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fun Fact 3 -->
+                <div class="swiper-slide">
+                    <div class="box" data-aos="fade-up">
+                        <div class="image">
+                            <img src="{% static 'shop/images/chutney.jpg' %}" alt="Fun Fact 3">
+                        </div>
+                        <div class="content">
+                            <h3>Chutneys Have Ancient Roots</h3>
+                            <a href="https://thesauceman.es/en/the-history-and-origins-of-chutney/" class="btn" target="_blank">read more</a>
+                            <div class="icons">
+                                <a href="#">
+                                    <i class="fas fa-calendar"></i> 1st March, 2025
+                                </a>
+                                <a href="#">
+                                    <i class="fas fa-user"></i> by Human 1
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+                <!-- Fun Fact 4 -->
+                <div class="swiper-slide">
+                    <div class="box" data-aos="fade-up">
+                        <div class="image">
+                            <img src="{% static 'shop/images/spices.jpg' %}" alt="Fun Fact 4">
+                        </div>
+                        <div class="content">
+                            <h3>World's Largest Spice Producer</h3>
+                            <a href="https://www.ibef.org/exports/spice-industry-india#:~:text=India%20is%20the%20largest%20exporter,spices%20worth%20US%24%201.09%20billion." class="btn" target="_blank">read more</a>
+                            <div class="icons">
+                                <a href="#">
+                                    <i class="fas fa-calendar"></i> 1st April, 2025
+                                </a>
+                                <a href="#">
+                                    <i class="fas fa-user"></i> by Human 2
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Fun Facts Slider Navigation -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </section>
+    <!-- ====== END FUN FACTS SECTION ====== -->
+
+    <!-- ====== FOOTER SECTION ====== -->
+    <section class="footer">
+        <div class="box-container">
+            <!-- Location Links -->
+            <div class="box" data-aos="fade-up">
+                <h3>our branches</h3>
+                <a href="#"><i class="fas fa-map-marker-alt"></i> india</a>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="box" data-aos="fade-up">
+                <h3>quick links</h3>
+                <a href="#home"><i class="fas fa-chevron-right"></i> Home</a>
+                <a href="#packages"><i class="fas fa-chevron-right"></i> Menu</a>
+                <a href="#blogs"><i class="fas fa-chevron-right"></i>Fun Facts</a>
+                <a href="{% url 'shop:order_history' %}"><i class="fas fa-chevron-right"></i> Order History</a>
+                <a href="{% url 'shop:userhelp' %}"><i class="fas fa-chevron-right"></i> Contact</a>
+                <a href="{% url 'users:profile' %}"><i class="fas fa-chevron-right"></i> User Profile</a>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="box" data-aos="fade-up">
+                <h3>contact info</h3>
+                <a href="#"><i class="fas fa-phone"></i> +123-456-7890</a>
+                <a href="#"><i class="fas fa-phone"></i> +111-222-3333</a>
+                <a href="#"><i class="fas fa-envelope"></i> 1234@gmail.com</a>
+                <a href="#"><i class="fas fa-map-marker-alt"></i> Hyd, india - 1234567</a>
+            </div>
+            
+            <!-- Social Media Links -->
+            <div class="box" data-aos="fade-up">
+                <h3>follow us</h3>
+                <a href="#"><i class="fab fa-facebook-f"></i> facebook</a>
+                <a href="#"><i class="fab fa-twitter"></i> twitter</a>
+                <a href="#"><i class="fab fa-instagram"></i> instagram</a>
+                <a href="#"><i class="fab fa-linkedin"></i> linkedin</a>
+            </div>
+        </div>
+
+        
+        <!-- Copyright Information -->
+        <div class="credit">Built with ❤️ by <span>Lrv Sai Kausthubh</span> | all rights reserved</div>
+    </section>
+    <!-- ====== END FOOTER SECTION ====== -->
+
+    <!-- ====== SCRIPTS ====== -->
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{% static 'shop/cafe.js' %}"></script>
+    <!-- ====== END SCRIPTS ====== -->
+</body>
+</html>

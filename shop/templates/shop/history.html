@@ -1,0 +1,1247 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order History - Food Zone</title>
+    {% csrf_token %}
+
+    <!-- External CSS Libraries -->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'shop/cafe.css' %}?v={% now 'U' %}">
+    <style>
+
+        /* Additional styles for order history page */
+        .back-btn {
+            margin: 20px;
+            display: inline-block;
+        }
+        
+        .order-history-container {
+            max-width: 95%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .order-history-page {
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+
+        .no-orders {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-top: 50px;
+            color: #777;
+        }
+        
+        /* Enhanced heading style */
+        .order-history-page .heading {
+            font-size: 4.5rem; /* Increased font size */
+            font-weight: 700; /* Make it bold */
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .order-history-page .heading span {
+            font-weight: 700; /* Keep the span part bold too */
+        }
+
+        .no-orders {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-top: 50px;
+            color: #777;
+        }
+
+
+        /* Excel-style table formatting */
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        
+        .orders-table th {
+            background-color: #febd69;
+            color: #333;
+            font-weight: 800;
+            text-align: left;
+            padding: 15px;
+            font-size: 16px;
+        }
+        
+        .orders-table td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            font-weight: 600; /* Make all cell content semi-bold */
+            font-size: 15px; /* Slightly larger text */
+        }
+        
+        .orders-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .orders-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .action-btn {
+            background-color: #febd69;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #111;
+            border-radius: 4px;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .action-btn:hover {
+            background-color: #f3a847;
+        }
+        
+        /* Order details panel */
+        .order-details-panel {
+            display: none;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f5f5f5;
+            transition: all 0.3s ease;
+        }
+        
+        .order-details-panel.show-details {
+            display: table-row;
+        }
+        
+        .order-details-content {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .order-details-content td {
+            padding: 15px;
+        }
+        
+        .order-details-content ul {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+        
+        .order-details-content li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .order-details-content li:last-child {
+            border-bottom: none;
+        }
+
+        /* Order details table styling */
+        .details-heading {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        .item-details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        .item-details-table th {
+            background-color: #f5f5f5;
+            color: #333;
+            font-weight: bold;
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .item-details-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+
+        /* Align quantity, price and total columns */
+        .item-details-table th:nth-child(2),
+        .item-details-table td:nth-child(2) {
+            text-align: center;
+        }
+
+        .item-details-table th:nth-child(3),
+        .item-details-table td:nth-child(3),
+        .item-details-table th:nth-child(4),
+        .item-details-table td:nth-child(4) {
+            text-align: right;
+        }
+
+        /* Ensure the order details content has proper padding */
+        .order-details-content {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+
+        /* Filter Controls */
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-container label {
+            font-weight: 500;
+            margin-right: 5px;
+        }
+
+        #dateFilter {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-width: 180px;
+        }
+
+        #customDateRange {
+            flex-basis: 100%;
+            margin-top: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group-text {
+            font-weight: 500;
+        }
+
+        .input-group input[type="date"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        /* Hide rows that don't match filter */
+        .hidden-row {
+            display: none;
+        }
+
+        /* Add these to your style section - they fix the detail panel display issue */
+        /* This ensures the detail panels show properly when toggled */
+        tr.hidden-row + tr.order-details-panel {
+            display: none !important;
+        }
+
+        tr.order-details-panel.show-details {
+            display: table-row !important;
+        }
+
+        /* Fix for Safari and Firefox */
+        tbody tr.order-details-panel {
+            display: none;
+        }
+
+        tbody tr.order-details-panel.show-details {
+            display: table-row;
+        }
+
+
+        /* Order status styles */
+        .order-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-in_progress {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-successful {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+
+
+        /* Payment method styling */
+        .order-meta-info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            border-left: 4px solid #febd69;
+        }
+
+        .payment-method-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            background-color: #e7f5ff;
+            color: #0366d6;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        /* Different colors for different payment methods */
+        .payment-method-badge.cash {
+            background-color: #e7f7e7;
+            color: #28a745;
+        }
+
+        .payment-method-badge.card {
+            background-color: #e7f5ff;
+            color: #0366d6;
+        }
+
+        .payment-method-badge.upi {
+            background-color: #fff3e0;
+            color: #ff8c00;
+        }
+
+
+
+        /* Responsive styles for order history */
+        @media (max-width: 992px) {
+            .order-history-page .heading {
+                font-size: 3rem;
+            }
+            
+            .filter-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            #dateFilter {
+                width: 100%;
+            }
+            
+            .action-btn {
+                padding: 10px;
+                margin: 5px 0;
+            }
+        }
+
+        /* Tablet view */
+        @media (max-width: 768px) {
+            .orders-table th, 
+            .orders-table td {
+                padding: 8px;
+                font-size: 14px;
+            }
+            
+            .order-history-page .heading {
+                font-size: 2.5rem;
+            }
+            
+            /* Hide less important columns on medium screens */
+            .orders-table th:nth-child(2), 
+            .orders-table td:nth-child(2) {
+                display: none;
+            }
+            
+            /* Make action buttons full width */
+            .action-btn {
+                display: block;
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+
+
+        /* Mobile view - transform table to cards */
+        @media (max-width: 576px) {
+            /* Style the table as cards */
+            .orders-table, 
+            .orders-table tbody, 
+            .orders-table thead, 
+            .orders-table tfoot {
+                display: block;
+            }
+            
+            /* Hide table headers on mobile */
+            .orders-table thead {
+                display: none;
+            }
+            
+            /* Style each row as a card */
+            .orders-table tbody tr:not(.order-details-panel) {
+                display: block;
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background-color: #fff;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            /* Style each cell as a row in the card */
+            .orders-table tbody td {
+                display: flex;
+                justify-content: space-between;
+                padding: 12px 15px;
+                text-align: right;
+                border-bottom: 1px solid #eee;
+            }
+            
+            /* Add column headers as pseudo-elements */
+            .orders-table tbody td:nth-child(1):before { content: ''; font-weight: 700; text-align: left; }
+            .orders-table tbody td:nth-child(3):before { content: ''; font-weight: 700; text-align: left; }
+            .orders-table tbody td:nth-child(4):before { content: ''; font-weight: 700; text-align: left; }
+            .orders-table tbody td:nth-child(5):before { content: 'Status: '; font-weight: 700; text-align: left; }
+            .orders-table tbody td:nth-child(6):before { content: ''; }
+            
+            /* Full width for action column */
+            .orders-table tbody td:nth-child(6) {
+                display: block;
+                text-align: center;
+                border-bottom: none;
+            }
+            
+            /* Order details panel styling for mobile */
+            .order-details-panel td {
+                padding: 0 !important;
+                display: block !important;
+            }
+            
+            .order-details-content {
+                padding: 15px;
+            }
+            
+            /* Item details table for mobile */
+            .item-details-table th, 
+            .item-details-table td {
+                padding: 8px 5px;
+                font-size: 14px;
+            }
+            
+            /* Stack filter elements vertically */
+            .filter-container {
+                flex-direction: column;
+            }
+            
+            .filter-container > * {
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .input-group > * {
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            
+            /* Fix button sizing */
+            .action-btn {
+                width: 100%;
+                padding: 12px;
+                margin: 5px 0;
+            }
+            
+            .order-history-page .heading {
+                font-size: 2rem;
+            }
+            
+            /* Fix details panel for mobile */
+            .order-details-panel.show-details {
+                display: block !important;
+            }
+        }
+
+        /* Fix for mobile receipt button */
+        @media (max-width: 400px) {
+            .receipt-btn {
+                margin-top: 8px;
+            }
+            
+            /* Make the icon more visible */
+            .receipt-btn i {
+                margin-right: 5px;
+            }
+        }
+
+
+
+
+
+        /* Search bar styling */
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .search-input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex-grow: 1;
+            min-width: 200px;
+            font-size: 14px;
+        }
+
+        .clear-btn {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .clear-btn:hover {
+            background-color: #f5c6cb;
+        }
+
+        /* Add search bar responsive adjustments */
+        @media (max-width: 768px) {
+            .filter-container {
+                gap: 15px;
+            }
+            
+            .search-container {
+                flex-wrap: wrap;
+            }
+            
+            .search-input {
+                flex-basis: 100%;
+            }
+            
+            #searchOrderBtn, #clearSearchBtn {
+                flex: 1;
+            }
+        }
+
+        /* Enhanced mobile search styling */
+        @media (max-width: 576px) {
+            /* Improve search container display */
+            .search-container {
+                flex-direction: column;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            
+            /* Full width search input */
+            .search-input {
+                width: 100%;
+                padding: 12px;
+                font-size: 16px; /* Larger for better mobile input */
+            }
+            
+            /* Better button layout */
+            #searchOrderBtn, #clearSearchBtn {
+                width: 100%;
+                padding: 12px;
+                margin: 0;
+                height: auto;
+                font-size: 16px;
+            }
+            
+            /* Add margin between buttons */
+            #clearSearchBtn {
+                margin-top: 8px;
+            }
+            
+            /* Make sure filter summary is readable */
+            .filter-summary {
+                font-size: 14px !important;
+                line-height: 1.4;
+                padding: 8px;
+                background-color: #f8f9fa;
+                border-radius: 4px;
+                text-align: center;
+            }
+            
+            /* Fix search results in card view */
+            .hidden-row {
+                display: none !important;
+            }
+            
+            /* Make "No orders found" message clear */
+            .no-orders-filtered {
+                margin: 25px 0;
+                padding: 15px;
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                text-align: center;
+            }
+        }
+
+        /* Even smaller screens */
+        @media (max-width: 350px) {
+            .filter-summary {
+                font-size: 12px !important;
+            }
+        }
+
+
+
+
+
+        /* Fix for order details display on mobile after search */
+        @media (max-width: 576px) {
+            /* Ensure details panel is properly displayed */
+            .order-details-panel.show-details {
+                display: block !important;
+                width: 100%;
+                margin-top: -15px;
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-top: none;
+                border-radius: 0 0 8px 8px;
+            }
+            
+            /* Fix item table display */
+            .item-details-table {
+                display: table !important;
+                width: 100%;
+                margin: 10px 0;
+            }
+            
+            .item-details-table thead {
+                display: table-header-group !important;
+            }
+            
+            .item-details-table tbody {
+                display: table-row-group !important;
+            }
+            
+            .item-details-table tr {
+                display: table-row !important;
+            }
+            
+            .item-details-table th,
+            .item-details-table td {
+                display: table-cell !important;
+                text-align: left;
+                border-bottom: 1px solid #eee;
+            }
+            
+            /* Ensure proper alignment for columns */
+            .item-details-table th:nth-child(2), 
+            .item-details-table td:nth-child(2) {
+                text-align: center !important;
+            }
+            
+            .item-details-table th:nth-child(3),
+            .item-details-table td:nth-child(3),
+            .item-details-table th:nth-child(4),
+            .item-details-table td:nth-child(4) {
+                text-align: right !important;
+            }
+            
+            /* Fix item details heading */
+            .details-heading {
+                margin-top: 15px;
+                font-size: 16px;
+            }
+            
+            /* Fix payment method badge position */
+            .order-meta-info {
+                margin-top: 5px;
+                margin-bottom: 15px;
+            }
+        }
+
+            /* Fix for Safari and Firefox */
+            @media screen and (-webkit-min-device-pixel-ratio:0) {
+                .order-details-panel.show-details {
+                    display: table-row !important;
+                }
+            }
+
+            /* Fix for Edge */
+            @supports (-ms-ime-align: auto) {
+                .order-details-panel.show-details {
+                    display: table-row !important;
+                }
+            }
+
+            
+            /* Fix order details display for all screen sizes after search */
+        .order-details-panel.show-details {
+            display: table-row !important;
+        }
+
+        /* Ensure order details content displays at full width */
+        .order-details-panel.show-details .order-details-content {
+            display: table-cell !important;
+            width: 100%;
+            padding: 20px !important;
+        }
+
+        /* Explicitly force table display for items table */
+        .order-details-panel.show-details .item-details-table {
+            display: table !important;
+            width: 100% !important;
+            margin: 10px 0 !important;
+        }
+
+        /* Ensure table structure displays correctly */
+        .order-details-panel.show-details .item-details-table thead,
+        .order-details-panel.show-details .item-details-table tbody {
+            display: table-row-group !important;
+        }
+
+        .order-details-panel.show-details .item-details-table tr {
+            display: table-row !important;
+        }
+
+        .order-details-panel.show-details .item-details-table th,
+        .order-details-panel.show-details .item-details-table td {
+            display: table-cell !important;
+        }
+
+        /* Ensure column alignment is preserved */
+        .order-details-panel.show-details .item-details-table th:nth-child(2),
+        .order-details-panel.show-details .item-details-table td:nth-child(2) {
+            text-align: center !important;
+        }
+
+        .order-details-panel.show-details .item-details-table th:nth-child(3),
+        .order-details-panel.show-details .item-details-table td:nth-child(3),
+        .order-details-panel.show-details .item-details-table th:nth-child(4),
+        .order-details-panel.show-details .item-details-table td:nth-child(4) {
+            text-align: right !important;
+        }
+
+        /* Enhanced mobile navigation back button */
+        @media (max-width: 768px) {
+            /* Hide the floating bottom button */
+            .mobile-back-btn {
+                display: none !important;
+            }
+            
+            /* Add back button to header navigation */
+            .header .back-menu-btn {
+                display: flex !important;
+                align-items: center;
+                background-color: transparent;
+                color: #111;
+                padding: 8px 15px;
+                border-radius: 20px;
+                font-weight: bold;
+                font-size: 14px;
+                margin-right: 10px;
+            }
+            
+            .header .back-menu-btn i {
+                margin-right: 5px;
+            }
+        }
+
+        /* Hide button in desktop view */
+        .header .back-menu-btn {
+            display: none;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <!-- ====== HEADER SECTION ====== -->
+    <header class="header">
+        <!-- Logo -->
+        <a href="{% url 'shop:cafe' %}" class="logo">
+            <i class="fas fa-utensils"></i> <strong>EZ FOOD</strong>
+        </a>
+
+        <!-- Navigation Icons -->
+        <div class="icons">
+            <!-- Add this new back button for mobile -->
+            <a href="{% url 'shop:cafe' %}" class="icon nav-item back-menu-btn" title="Back to Menu">
+                <i class="fas fa-arrow-left"></i> Menu
+            </a>
+            
+            <!-- Existing home button -->
+            <a href="{% url 'shop:cafe' %}" class="icon nav-item" title="Back to Home">
+                <i class="fas fa-home"></i>
+            </a>
+        </div>
+    </header>
+    
+    <!-- ====== ORDER HISTORY PAGE ====== -->
+    <section class="order-history-page" id="order-history">
+    <div class="order-history-container">
+        <h1 class="heading"><span>Your</span> Order History</h1>
+
+
+        <div class="filter-container">
+            <label for="dateFilter">Filter by:</label>
+                <select id="dateFilter" class="form-select">
+                    <option value="all">All Time</option>
+                    
+                    <option value="custom">Custom Range</option>
+                </select>
+                
+                <div id="customDateRange" style="display: none;">
+                    <div class="input-group">
+                        <span class="input-group-text">From</span>
+                        <input type="date" id="startDate" class="form-control">
+                        <span class="input-group-text">To</span>
+                        <input type="date" id="endDate" class="form-control">
+                        <button id="applyCustomRange" class="action-btn">Apply</button>
+                    </div>
+            </div>
+        </div>
+
+
+        <!-- Order ID Search Bar -->
+        <div class="search-container">
+            <input type="text" id="orderSearchInput" placeholder="Search by Order ID..." class="search-input">
+            <button id="searchOrderBtn" class="action-btn">
+                <i class="fas fa-search"></i> Search
+            </button>
+            <button id="clearSearchBtn" class="action-btn clear-btn" style="display: none;">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
+
+        
+        <!-- Excel-style order history table -->
+        {% if orders %}
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Student ID</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>{{ order.orderId }}</td>
+                        <td>{{ order.studentId }}</td>
+                        <td data-date="{{ order.date|date:'Y-m-d H:i:s' }}">{{ order.date_formatted }}</td>
+                        <td>₹{{ order.total }}</td>
+                        <td><span class="order-status status-{{ order.status }}">{{ order.status|title }}</span></td>
+                        <td>
+                            <button class="action-btn toggle-details-btn" data-index="{{ forloop.counter0 }}">
+                                View Details ▼
+                            </button>
+                            <a href="{% url 'managepayments:download_receipt' %}?order_id={{ order.orderId }}" class="action-btn receipt-btn" title="Download Receipt">
+                                <i class="fas fa-file-invoice"></i> Download Receipt
+                            </a>
+                        </td>
+                    </tr>
+                    <!-- Replace the existing order details panel with this -->
+                    <tr class="order-details-panel" id="order-details-{{ forloop.counter0 }}">
+                        <td colspan="6" class="order-details-content">
+
+                            <!-- Add payment method info at the top of the details panel -->
+                            <div class="order-meta-info">
+                                <p><strong>Payment Method:</strong> <span class="payment-method-badge">{{ order.payment_method|default:"Not specified"|title }}</span></p>
+                            </div>
+
+                            <h3 class="details-heading"></h3>
+                            <table class="item-details-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Qty</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in order.items %}
+                                    <tr>
+                                        <td>{{ item.name }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>₹{{ item.price }}</td>
+                                        <td>₹{{ item.item_total }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-orders">No order history found.</p>
+        {% endif %}
+    </div>
+</section>
+
+    <!-- ====== SCRIPTS ====== -->
+    <script>
+        /**
+        * Order History Page - JavaScript
+        * 
+        * This script handles:
+        * 1. Expanding/collapsing order details
+        * 2. Filtering orders by date (today, week, month, custom)
+        * 3. Displaying appropriate messages when no orders match filters
+        */
+        document.addEventListener('DOMContentLoaded', function() {
+            // Global variables
+            const allOrderRows = Array.from(document.querySelectorAll('.orders-table tbody tr:not(.order-details-panel)'));
+            const filterSummaryEl = document.createElement('div');
+            filterSummaryEl.className = 'filter-summary';
+            filterSummaryEl.style.margin = '10px 0';
+            filterSummaryEl.style.fontWeight = '500';
+            document.querySelector('.filter-container').after(filterSummaryEl);
+            
+            // Create No Orders message container
+            const noOrdersContainer = document.createElement('div');
+            noOrdersContainer.id = 'no-orders-message';
+            noOrdersContainer.className = 'no-orders';
+            document.querySelector('.order-history-container').appendChild(noOrdersContainer);
+
+
+
+            // Payment method badge styling
+            document.querySelectorAll('.payment-method-badge').forEach(badge => {
+                const method = badge.textContent.toLowerCase().trim();
+                if (method) {
+                    badge.classList.add(method);
+                    
+                    // Add payment icons based on method
+                    if (method === 'card') {
+                        badge.innerHTML = '<i class="fas fa-credit-card"></i> ' + badge.innerHTML;
+                    } else if (method === 'cash') {
+                        badge.innerHTML = '<i class="fas fa-money-bill-wave"></i> ' + badge.innerHTML;
+                    } else if (method === 'upi') {
+                        badge.innerHTML = '<i class="fas fa-mobile-alt"></i> ' + badge.innerHTML;
+                    }
+                }
+            });
+            
+            // ===== EVENT LISTENERS =====
+            
+            // Setup toggle details functionality
+            document.querySelectorAll('.toggle-details-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = btn.dataset.index;
+                    const detailsRow = document.getElementById(`order-details-${index}`);
+                    
+                    if (!detailsRow) return; // Safety check
+                    
+                    // Find the parent row to check if it's hidden
+                    const parentRow = btn.closest('tr');
+                    if (parentRow.classList.contains('hidden-row')) return; // Don't toggle hidden rows
+                    
+                    // Toggle details visibility
+                    detailsRow.classList.toggle('show-details');
+                    
+                    // Update button text
+                    btn.innerHTML = detailsRow.classList.contains('show-details') ? 
+                        'Hide Details ▲' : 'View Details ▼';
+                        
+                    // Scroll to make details visible if expanding
+                    if (detailsRow.classList.contains('show-details')) {
+                        detailsRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                });
+            });
+            
+            // Set up date filtering event listeners
+            document.getElementById('dateFilter').addEventListener('change', handleDateFilterChange);
+            document.getElementById('applyCustomRange').addEventListener('click', applyCustomDateRange);
+
+            // ADD THESE LINES HERE (around line 748):
+            // Set up search functionality
+            document.getElementById('searchOrderBtn').addEventListener('click', searchOrders);
+            document.getElementById('clearSearchBtn').addEventListener('click', clearSearch);
+            document.getElementById('orderSearchInput').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    searchOrders();
+                }
+            });
+            
+            /**
+            * Handle date filter dropdown change
+            * Shows/hides custom date inputs and applies selected filter
+            */
+            function handleDateFilterChange() {
+                const filterValue = document.getElementById('dateFilter').value;
+                
+                // Show/hide custom date range inputs
+                if (filterValue === 'custom') {
+                    document.getElementById('customDateRange').style.display = 'block';
+                    updateFilterSummary('Custom date range');
+                } else {
+                    document.getElementById('customDateRange').style.display = 'none';
+                    
+                    // Apply selected filter immediately
+                    applyDateFilter(filterValue);
+                    
+                    // Update the filter summary text
+                    const filterTexts = {
+                        'all': 'All time',
+                        'today': 'Today',
+                        'week': 'Last 7 days',
+                        'month': 'Last 30 days'
+                    };
+                    updateFilterSummary(filterTexts[filterValue]);
+                }
+            }
+            
+            /**
+            * Updates the filter summary text displayed above results
+            * @param {string} summaryText - The text to display
+            */
+            function updateFilterSummary(summaryText) {
+                filterSummaryEl.textContent = `Showing orders from: ${summaryText}`;
+            }
+            
+            /**
+            * Apply date filter to orders based on predefined timeframes
+            * @param {string} filterType - Type of filter (all, today, week, month)
+            */
+            function applyDateFilter(filterType) {
+                // Show loading state
+                document.body.style.cursor = 'progress';
+                
+                const now = new Date();
+                
+                // Reset visibility on all rows
+                resetAllRows();
+                
+                // If showing all, we're done
+                if (filterType === 'all') {
+                    document.body.style.cursor = 'default';
+                    checkNoOrdersVisible();
+                    return;
+                }
+                
+                // Apply filtering based on date
+                allOrderRows.forEach(row => {
+                    const dateCell = row.cells[2];
+                    // Use data-date attribute if available, fall back to text content
+                    const orderDate = new Date(dateCell.getAttribute('data-date') || dateCell.textContent);
+                    
+                    let show = false;
+                    
+                    switch(filterType) {
+                        case 'today':
+                            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                            show = orderDate >= today;
+                            break;
+                            
+                        case 'week':
+                            const weekAgo = new Date(now);
+                            weekAgo.setDate(weekAgo.getDate() - 7);
+                            show = orderDate >= weekAgo;
+                            break;
+                            
+                        case 'month':
+                            const monthAgo = new Date(now);
+                            monthAgo.setDate(monthAgo.getDate() - 30);
+                            show = orderDate >= monthAgo;
+                            break;
+                    }
+                    
+                    if (!show) {
+                        row.classList.add('hidden-row');
+                    }
+                });
+                
+                // Check if any orders are displayed after filtering
+                checkNoOrdersVisible();
+                
+                // Reset cursor
+                document.body.style.cursor = 'default';
+            }
+            
+            /**
+            * Apply custom date range filter
+            * Takes values from date inputs and filters orders
+            */
+            function applyCustomDateRange() {
+                // Show loading state
+                document.body.style.cursor = 'progress';
+                
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                
+                // Validate inputs
+                if (!startDate || !endDate) {
+                    alert("Please select both start and end dates");
+                    document.body.style.cursor = 'default';
+                    return;
+                }
+                
+                // Convert to Date objects and set time to start/end of day
+                const start = new Date(startDate);
+                start.setHours(0, 0, 0, 0); // Start of day
+                
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999); // End of day
+                
+                // Reset visibility on all rows
+                resetAllRows();
+                
+                // Filter by custom date range
+                allOrderRows.forEach(row => {
+                    const dateCell = row.cells[2];
+                    // Use data-date attribute if available, fall back to text content
+                    const orderDate = new Date(dateCell.getAttribute('data-date') || dateCell.textContent);
+                    
+                    if (orderDate < start || orderDate > end) {
+                        row.classList.add('hidden-row');
+                    }
+                });
+                
+                // Update filter summary
+                const startFormatted = start.toLocaleDateString();
+                const endFormatted = end.toLocaleDateString();
+                updateFilterSummary(`${startFormatted} to ${endFormatted}`);
+                
+                // Check if any orders are displayed after filtering
+                checkNoOrdersVisible();
+                
+                // Reset cursor
+                document.body.style.cursor = 'default';
+            }
+            
+            /**
+            * Reset all rows to visible state and close expanded details
+            * Helper function to DRY up the code
+            */
+            function resetAllRows() {
+            // First, close all detail panels
+            document.querySelectorAll('.order-details-panel').forEach(panel => {
+                panel.classList.remove('show-details');
+            });
+            
+            // Then reset all buttons
+            document.querySelectorAll('.toggle-details-btn').forEach(btn => {
+                btn.innerHTML = 'View Details ▼';
+            });
+            
+            // Finally, show all regular rows
+            allOrderRows.forEach(row => {
+                // Make row visible
+                row.classList.remove('hidden-row');
+            });
+
+            // Hide clear search button when resetting
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            }
+            
+            /**
+            * Check if any orders are visible after filtering
+            * If none are visible, display a "No orders found" message
+            */
+            function checkNoOrdersVisible() {
+                const visibleOrders = allOrderRows.filter(row => !row.classList.contains('hidden-row'));
+                const ordersTable = document.querySelector('.orders-table');
+                const noOrdersContainer = document.getElementById('no-orders-message');
+                
+                if (visibleOrders.length === 0) {
+                    // No matching orders found
+                    noOrdersContainer.innerHTML = '<p class="no-orders-filtered">No orders found for selected date range.</p>';
+                    if (ordersTable) ordersTable.style.display = 'none';
+                } else {
+                    // Orders found
+                    noOrdersContainer.innerHTML = '';
+                    if (ordersTable) ordersTable.style.display = 'table';
+                }
+                
+                // Update counts in filter summary
+                const currentSummary = filterSummaryEl.textContent;
+                filterSummaryEl.textContent = `${currentSummary} (${visibleOrders.length} orders)`;
+            }
+
+            // ADD THESE FUNCTIONS HERE (around line 1109):
+            /**
+            * Search for orders by Order ID
+            */
+            function searchOrders() {
+                const searchTerm = document.getElementById('orderSearchInput').value.trim().toLowerCase();
+                
+                if (!searchTerm) {
+                    alert('Please enter an Order ID to search');
+                    return;
+                }
+                
+                // Show loading state
+                document.body.style.cursor = 'progress';
+                
+                // Reset all rows first
+                resetAllRows();
+                
+                // Filter rows by search term
+                allOrderRows.forEach(row => {
+                    const orderId = row.cells[0].textContent.trim().toLowerCase();
+                    
+                    if (!orderId.includes(searchTerm)) {
+                        row.classList.add('hidden-row');
+                    }
+                });
+                
+                // Show clear button
+                document.getElementById('clearSearchBtn').style.display = 'inline-block';
+                
+                // Update filter summary
+                updateFilterSummary(`Orders matching "${searchTerm}"`);
+                
+                // Check if any orders are visible
+                checkNoOrdersVisible();
+                
+                // Reset cursor
+                document.body.style.cursor = 'default';
+            }
+
+            /**
+            * Clear search and reset view
+            */
+            function clearSearch() {
+                document.getElementById('orderSearchInput').value = '';
+                document.getElementById('clearSearchBtn').style.display = 'none';
+                
+                // Reset to showing all orders
+                resetAllRows();
+                updateFilterSummary('All time');
+                document.getElementById('dateFilter').value = 'all';
+                document.getElementById('customDateRange').style.display = 'none';
+                
+                // Check if any orders are visible
+                checkNoOrdersVisible();
+            }
+        });
+
+        
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EZ Food - Chat Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'shop/userhelp.css' %}">
+    <style>
+        /* Quick suggestion chips styling */
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .suggestion-chip {
+            background-color: #2a2d42; /* Darker background */
+            border: 1px solid #4a4d5e;
+            border-radius: 18px;
+            padding: 8px 15px;
+            font-size: 14px;
+            color: #ffffff; /* White text for contrast */
+            font-weight: 500; /* Medium weight for better visibility */
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+        }
+        
+        .suggestion-chip:hover {
+            background-color: #3a3e58; /* Lighter on hover */
+            transform: translateY(-1px); /* Slight lift effect */
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="{% url 'shop:cafe' %}" class="logo">
+                <i class="fas fa-utensils"></i> <strong>EZ FOOD</strong>
+            </a>
+        </div>
+        
+        <div class="sidebar-options">
+            <button class="new-chat">
+                <i class="fas fa-plus"></i> New Chat
+            </button>
+            
+            <div class="sidebar-items">
+                {% comment %} <a href="{% url 'shop:cafe' %}" class="sidebar-item">
+                    <i class="fas fa-home"></i> Home Page
+                </a> {% endcomment %}
+                {% comment %} <a href="{% url 'shop:order_history' %}" class="sidebar-item">
+                    <i class="fas fa-history"></i> Order History
+                </a> {% endcomment %}
+                <a href="#" class="sidebar-item active">
+                    <i class="fas fa-robot"></i> Chat Assistant
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+        <div class="chat-header">
+            {% comment %} <a href="{% url 'shop:cafe' %}" id="mobile-home-link" class="mobile-home-link">
+                <i class="fas fa-home"></i>
+            </a> {% endcomment %}
+            <h2>EZ Food Chat Assistant</h2>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <!-- Welcome message -->
+            <div class="message-row bot-row">
+                <div class="avatar bot-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message bot">
+                    Hello! I'm EZ Food's virtual assistant. How can I help you today?
+                </div>
+            </div>
+            <!-- Messages will be added here dynamically -->
+        </div>
+        
+        <div class="chat-input-container">
+            <!-- Quick suggestion chips -->
+            <div class="suggestion-chips">
+                <div class="suggestion-chip" onclick="useSuggestion('What food do you offer?')">What's on the menu?</div>
+                <div class="suggestion-chip" onclick="useSuggestion('How to order')">How do I place an order?</div>
+                <div class="suggestion-chip" onclick="useSuggestion('about platform')">About this platform</div>
+                <div class="suggestion-chip" onclick="useSuggestion('hours')">Working hours</div>
+                <div class="suggestion-chip" onclick="useSuggestion('payment methods')">Payment options</div>
+            </div>
+            
+            <form id="chat-form" onsubmit="event.preventDefault(); sendMessage();">
+                <div class="chat-input-wrapper">
+                    <input type="text" id="userInput" placeholder="Ask anything about our menu, ordering, or delivery...">
+                    <button type="submit" class="send-button">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="chat-input-footer">
+                    <p>EZ Food Assistant can make mistakes. Consider checking important information.</p>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Link to external JS file -->
+    <script src="{% static 'shop/userhelp.js' %}"></script>
+    <script>
+    /**
+     * Handles suggestion chip clicks
+     * Sets the user input to the suggestion text and triggers the send process
+     * 
+     * @param {string} suggestionText - The text from the clicked suggestion
+     */
+    function useSuggestion(suggestionText) {
+        // Set the user input field with the suggestion text
+        const userInput = document.getElementById('userInput');
+        userInput.value = suggestionText;
+        
+        // Send the message as if the user typed it
+        sendMessage();
+    }
+</script>
+</body>
+</html>

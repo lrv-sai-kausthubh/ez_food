@@ -1,0 +1,283 @@
+<!-- filepath: c:\KAUSTHUBH\MY CODE\cafeteria_management_system\shop\templates\shop\login.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafeteria Login & Registration</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'shop/login.css' %}">
+</head>
+<body>
+  <div class="wrapper">
+    <div class="form-wrapper sign-in">
+      <form method="post">
+        {% csrf_token %}
+        <h2>Login</h2>
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+        <div class="input-group">
+          {{ form.name }}
+          <label for="{{ form.name.id_for_label }}">User Name</label>
+        </div>
+        <small style="color: #ccc; font-size: 12px; margin-top: -15px; display: block;">
+          Use the same name as given during registration.
+        </small>
+
+        <div class="input-group">
+          {{ form.password }}
+          <label for="{{ form.password.id_for_label }}">Password</label>
+          </div>
+          <!-- Show password checkbox right after the input group -->
+          <div style="display: flex; align-items: center; margin-top: 5px; margin-bottom: 15px;">
+            <input 
+              type="checkbox" 
+              id="showPassword" 
+              style="margin-right: 5px; accent-color: #0ef;" 
+              onclick="document.querySelector('input[name=\'password\']').type = this.checked ? 'text' : 'password'"
+            >
+            <label for="showPassword" style="color: #fff; font-size: 14px; cursor: pointer;">Show password</label>
+        </div>
+        
+        <button type="submit">Login</button>
+        <div class="signUp-link">
+          <p>Don't have an account? <a href="{% url 'shop:shop_register' %}" class="signUpBtn-link">Register</a></p>
+        </div>
+
+        <div class="forgot-password" style="text-align: right;">
+          <p><a href="{% url 'shop:forgot_password' %}" class="forgot-password-link" style="color: #fff; margin-right: 130px;">Forgot password?</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="{% static 'shop/login.js' %}"></script>
+  <style>
+
+    
+            * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+        }
+
+        .wrapper {
+        position: relative;
+        width: 400px;
+        height: 500px;
+        background: rgba(255, 255, 255, .2);
+        border-radius: 20px;
+        box-shadow: 0 0 50px rgba(0, 0, 0, .1);
+        padding: 40px;
+        overflow: hidden;
+        }
+
+        .form-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        transition: 1s ease-in-out;
+        }
+
+        .form-wrapper.sign-in {
+        transition-delay: .25s;
+        }
+
+        .form-wrapper.sign-up {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: translateY(100%);
+        }
+
+        form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        }
+
+        h2 {
+        font-size: 30px;
+        color: #fff;
+        text-align: center;
+        }
+
+        .input-group {
+        position: relative;
+        }
+
+        .input-group input {
+        width: 100%;
+        padding: 10px;
+        outline: none;
+        border: 1px solid #fff;
+        background: transparent;
+        border-radius: 5px;
+        font-size: 16px;
+        color: #fff;
+        }
+
+        .input-group label {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        color: #fff;
+        pointer-events: none;
+        transition: .5s;
+        }
+
+        .input-group input:focus ~ label,
+        .input-group input:valid ~ label {
+        top: -5px;
+        font-size: 12px;
+        background: rgba(0, 0, 0, .2);
+        padding: 0 5px;
+        }
+
+        .remember {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #fff;
+        font-size: 14px;
+        }
+
+        .remember label input {
+        accent-color: #0ef;
+        margin-right: 3px;
+        }
+
+        button {
+        width: 100%;
+        height: 40px;
+        border-radius: 50px;
+        background: #fff;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: .5s;
+        }
+
+        button:hover {
+        background: #0ef;
+        }
+
+        .signUp-link {
+        text-align: center;
+        margin-top: 15px;
+        }
+
+        .signUp-link p {
+        color: #fff;
+        font-size: 14px;
+        }
+
+        .signUp-link p a {
+        color: #0ef;
+        text-decoration: none;
+        font-weight: 600;
+        }
+
+        .error {
+        color: #ff4444;
+        text-align: center;
+        background: rgba(255, 0, 0, .1);
+        padding: 5px;
+        border-radius: 5px;
+        }
+  </style>
+
+  <script>
+        const signInBtnLink = document.querySelector('.signInBtn-link');
+        const signUpBtnLink = document.querySelector('.signUpBtn-link');
+        const wrapper = document.querySelector('.wrapper');
+        signUpBtnLink.addEventListener('click', () => {
+            wrapper.classList.toggle('active');
+        });
+        signInBtnLink.addEventListener('click', () => {
+            wrapper.classList.toggle('active');
+        });
+
+        // Add validation for name field - no special characters
+        const nameInput = document.querySelector('input[name="name"]');
+        if (nameInput) {
+            nameInput.addEventListener('input', function(e) {
+                // Only allow letters, numbers and spaces
+                const validInput = this.value.replace(/[^a-zA-Z0-9 ]/g, '');
+                
+                if (this.value !== validInput) {
+                    this.value = validInput;
+                    // Optional: show validation message
+                    showValidationMessage(this, 'Special characters not allowed');
+                } else {
+                    hideValidationMessage(this);
+                }
+            });
+        }
+        
+        // Helper functions for validation messages
+        function showValidationMessage(inputElement, message) {
+            // Remove any existing validation message
+            hideValidationMessage(inputElement);
+            
+            // Create and show validation message
+            const validationMsg = document.createElement('div');
+            validationMsg.className = 'validation-message';
+            validationMsg.textContent = message;
+            validationMsg.style.color = '#ff4444';
+            validationMsg.style.fontSize = '12px';
+            validationMsg.style.marginTop = '5px';
+            
+            inputElement.parentNode.appendChild(validationMsg);
+        }
+        
+        function hideValidationMessage(inputElement) {
+            const existingMsg = inputElement.parentNode.querySelector('.validation-message');
+            if (existingMsg) {
+                existingMsg.remove();
+            }
+        }
+
+
+        // Add form submit validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+          // Check if name contains special characters
+          const nameInput = document.querySelector('input[name="name"]');
+          if (nameInput && /[^a-zA-Z0-9 ]/.test(nameInput.value)) {
+            e.preventDefault(); // Prevent form submission
+            alert('Please remove special characters from the name field');
+            nameInput.focus();
+            return false;
+          }
+          
+          // For register page, also check email
+          const emailInput = document.querySelector('input[name="email"]');
+          if (emailInput && /[^\w@.-]/.test(emailInput.value)) {
+            e.preventDefault(); // Prevent form submission
+            alert('Please remove invalid characters from the email field');
+            emailInput.focus();
+            return false;
+          }
+          
+          // If we get here, validation passed
+          return true;
+  </script>
+</body>
+</html>

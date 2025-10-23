@@ -1,0 +1,516 @@
+<!-- filepath: c:\KAUSTHUBH\MY CODE\cafeteria_management_system\shop\templates\shop\register.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafeteria Registration</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'shop/login.css' %}">
+</head>
+<body>
+
+  <div class="wrapper">
+  <div class="form-wrapper sign-in">
+    <form method="post">
+      {% csrf_token %}
+
+
+      <!-- Display name field errors prominently -->
+    {% if form.name.errors %}
+    <div class="error-message">
+        {{ form.name.errors }}
+    </div>
+    {% endif %}
+
+
+      <h2>Register</h2>
+      
+      <div class="form-grid">
+        <!-- Left Column -->
+        <div>
+          <div class="input-group">
+            {{ form.name }}
+            <label for="{{ form.name.id_for_label }}">Name</label>
+          </div>
+          
+          <div class="input-group">
+            {{ form.phone }}
+            <label for="{{ form.phone.id_for_label }}">Phone</label>
+          </div>
+          
+          <div class="security-label">Security Question 1</div>
+          <div class="input-group">
+            {{ form.security_question1 }}
+          </div>
+          
+          <div class="input-group">
+            {{ form.security_answer1 }}
+            <label for="{{ form.security_answer1.id_for_label }}"></label>
+          </div>
+        </div>
+        
+        <!-- Right Column -->
+        <div>
+          <div class="input-group">
+            {{ form.email }}
+            <label for="{{ form.email.id_for_label }}">Email</label>
+          </div>
+          
+          <div class="input-group">
+            {{ form.password }}
+            <label for="{{ form.password.id_for_label }}">Password</label>
+          </div>
+          
+          <div class="security-label">Security Question 2</div>
+          <div class="input-group">
+            {{ form.security_question2 }}
+          </div>
+          
+          <div class="input-group">
+            {{ form.security_answer2 }}
+            <label for="{{ form.security_answer2.id_for_label }}"></label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Full-width items -->
+      <button type="submit">Register</button>
+      <div class="signUp-link">
+        <p>Already have an account? <a href="{% url 'shop:shop_login' %}" class="signInBtn-link">Login</a></p>
+      </div>
+    </form>
+  </div>
+</div>
+
+  <style>
+
+    .error-message {
+        color: #ff4444;
+        background-color: rgba(255, 68, 68, 0.2);
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        font-weight: 500;
+        text-align: center;
+        border: 1px solid #ff4444;
+    }
+
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+    }
+
+    .wrapper {
+      position: relative;
+      width: 600px; /* Increased width to accommodate columns */
+      height: auto;
+      background: rgba(255, 255, 255, .2);
+      border-radius: 20px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, .1);
+      padding: 40px;
+    }
+
+    .form-wrapper {
+      width: 100%;
+      height: 100%;
+    }
+
+    form {
+      width: 100%;
+    }
+
+    h2 {
+      font-size: 30px;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    /* Grid layout for form fields */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* Two equal columns */
+      gap: 20px; /* Space between grid items */
+      margin-bottom: 25px;
+    }
+
+    /* For full-width elements like heading and button */
+    .form-full-width {
+      grid-column: span 2;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    /* Label for security questions */
+    .security-label {
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      padding: 12px;
+      outline: none;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    .input-group select {
+      appearance: menulist;
+      cursor: pointer;
+    }
+
+    .input-group select option {
+      background: #203a43;
+      color: #fff;
+      padding: 5px;
+    }
+
+    .input-group label {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: #fff;
+      pointer-events: none;
+      transition: .5s;
+    }
+
+    /* For regular inputs */
+    .input-group input:focus ~ label,
+    .input-group input:valid ~ label {
+      top: -5px;
+      font-size: 12px;
+      background: rgba(0, 0, 0, .2);
+      padding: 0 5px;
+    }
+
+    /* For select elements - always have label at top */
+    .select-label {
+      top: -5px !important;
+      font-size: 12px !important;
+      background: rgba(0, 0, 0, .2) !important;
+      padding: 0 5px !important;
+    }
+
+    button {
+      width: 100%;
+      height: 45px;
+      border-radius: 50px;
+      background: #fff;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: .5s;
+      margin-top: 5px;
+      margin-bottom: 15px;
+    }
+
+    button:hover {
+      background: #0ef;
+    }
+
+    .signUp-link {
+      text-align: center;
+    }
+
+    .signUp-link p {
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .signUp-link p a {
+      color: #0ef;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .error {
+      color: #ff4444;
+      text-align: center;
+      background: rgba(255, 0, 0, .1);
+      padding: 5px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    .validation-message {
+      color: #ff4444;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+</style>
+
+<script>
+  // ==== DOM ELEMENT SELECTION ====
+  const signInBtnLink = document.querySelector('.signInBtn-link');
+  const signUpBtnLink = document.querySelector('.signUpBtn-link');
+  const wrapper = document.querySelector('.wrapper');
+  const form = document.querySelector('form');
+  
+  // Select input fields
+  const nameInput = document.querySelector('input[name="name"]');
+  const emailInput = document.querySelector('input[name="email"]');
+  const phoneInput = document.querySelector('input[name="phone"]');
+  const answer1Input = document.querySelector('input[name="security_answer1"]');
+  // Select security question fields
+  const question1Select = document.querySelector('select[name="security_question1"]');
+  const question2Select = document.querySelector('select[name="security_question2"]');
+
+  // ==== LOGIN/REGISTER TOGGLE FUNCTIONALITY ====
+  // Only add event listener if the element exists
+  if (signUpBtnLink) {
+    signUpBtnLink.addEventListener('click', () => {
+      wrapper.classList.toggle('active');
+    });
+  }
+  
+  if (signInBtnLink) {
+    signInBtnLink.addEventListener('click', () => {
+      wrapper.classList.toggle('active');
+    });
+  }
+
+  // Add validation for unique security questions
+  if (question1Select) {
+    question1Select.addEventListener('change', function() {
+      updateSecurityQuestionOptions();
+    });
+  }
+
+  if (question2Select) {
+    question2Select.addEventListener('change', function() {
+      updateSecurityQuestionOptions();
+    });
+  }
+
+  // ==== LIVE INPUT VALIDATION FUNCTIONS ====
+  // Add live validation to fields if they exist
+  if (nameInput) {
+    nameInput.addEventListener('input', function() {
+      validateWithPattern(this, /[^a-zA-Z0-9 ]/g, 'Special characters not allowed');
+    });
+  }
+  
+  if (emailInput) {
+    emailInput.addEventListener('input', function() {
+      validateWithPattern(this, /[^\w@.-]/g, 'Some special characters not allowed');
+    });
+  }
+
+    if (phoneInput) {
+    phoneInput.addEventListener('input', function() {
+      // Only allow digits and limit to 10 characters
+      if (this.value.length > 10) {
+        this.value = this.value.slice(0, 10);
+        showValidationMessage(this, 'Phone number should be exactly 10 digits');
+      }
+      
+      // Remove non-digit characters
+      validateWithPattern(this, /[^\d]/g, 'Only numbers allowed');
+      
+      // Show validation message for incomplete phone numbers
+      if (this.value.length > 0 && this.value.length < 10) {
+        showValidationMessage(this, 'Phone number must be 10 digits');
+      } else if (this.value.length === 10) {
+        hideValidationMessage(this);
+      }
+    });
+  }
+  
+  
+  {% comment %} if (phoneInput) {
+    phoneInput.addEventListener('input', function() {
+      validateWithPattern(this, /[^\d]/g, 'Only numbers allowed');
+    });
+  } {% endcomment %}
+  
+  // Reusable validation function for pattern-based validation
+  function validateWithPattern(inputElement, invalidPattern, message) {
+    const validInput = inputElement.value.replace(invalidPattern, '');
+    
+    if (inputElement.value !== validInput) {
+      inputElement.value = validInput;
+      showValidationMessage(inputElement, message);
+    } else {
+      hideValidationMessage(inputElement);
+    }
+  }
+
+  // ==== VALIDATION HELPER FUNCTIONS ====
+  function showValidationMessage(inputElement, message) {
+    hideValidationMessage(inputElement);
+    
+    const validationMsg = document.createElement('div');
+    validationMsg.className = 'validation-message';
+    validationMsg.textContent = message;
+    validationMsg.style.color = '#ff4444';
+    validationMsg.style.fontSize = '12px';
+    validationMsg.style.marginTop = '5px';
+    
+    inputElement.parentNode.appendChild(validationMsg);
+  }
+  
+  function hideValidationMessage(inputElement) {
+    const existingMsg = inputElement.parentNode.querySelector('.validation-message');
+    if (existingMsg) {
+      existingMsg.remove();
+    }
+  }
+
+  function showFormError(message) {
+    const existingError = document.querySelector('.form-error');
+    if (existingError) existingError.remove();
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'form-error error';
+    errorDiv.textContent = message;
+    
+    const heading = form.querySelector('h2');
+    form.insertBefore(errorDiv, heading.nextSibling);
+    
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    setTimeout(() => {
+      errorDiv.classList.add('show');
+    }, 10);
+  }
+
+
+      /**
+    * Updates security question options to prevent duplicates
+    * Disables selected options in the other dropdown
+    */
+    function updateSecurityQuestionOptions() {
+      if (!question1Select || !question2Select) return;
+      
+      // Reset all options first
+      for (let option of question1Select.options) {
+        option.disabled = false;
+      }
+      
+      for (let option of question2Select.options) {
+        option.disabled = false;
+      }
+      
+      // Disable selected value in the other dropdown (if not empty)
+      const q1Value = question1Select.value;
+      const q2Value = question2Select.value;
+      
+      if (q1Value && q1Value !== '') {
+        for (let option of question2Select.options) {
+          if (option.value === q1Value) {
+            option.disabled = true;
+          }
+        }
+      }
+      
+      if (q2Value && q2Value !== '') {
+        for (let option of question1Select.options) {
+          if (option.value === q2Value) {
+            option.disabled = true;
+          }
+        }
+      }
+    }
+
+  // ==== FORM SUBMISSION VALIDATION ====
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      let hasError = false;
+      let errorMessage = '';
+      
+      // Validate name field
+      if (nameInput && /[^a-zA-Z0-9 ]/.test(nameInput.value)) {
+        errorMessage = 'Please remove special characters from the name field';
+        nameInput.focus();
+        hasError = true;
+      }
+      
+      // Validate email field
+      if (!hasError && emailInput) {
+        if (!emailInput.value.endsWith('@gmail.com')) {
+          errorMessage = 'Email must end with @gmail.com';
+          emailInput.focus();
+          hasError = true;
+        } else if (/[^\w@.-]/.test(emailInput.value)) {
+          errorMessage = 'Please remove invalid characters from the email field';
+          emailInput.focus();
+          hasError = true;
+        }
+      }
+      
+      // Validate phone field
+      if (!hasError && phoneInput && /[^\d]/.test(phoneInput.value)) {
+        errorMessage = 'Phone number should contain digits only';
+        phoneInput.focus();
+        hasError = true;
+      }
+
+      // Validate security question 1 is selected
+      if (!hasError && question1Select && (!question1Select.value || question1Select.value === '')) {
+        errorMessage = 'Please select security question 1';
+        question1Select.focus();
+        hasError = true;
+      }
+      
+      // Validate security answer 1 is provided
+      if (!hasError && answer1Input && answer1Input.value.trim() === '') {
+        errorMessage = 'Please provide an answer for security question 1';
+        answer1Input.focus();
+        hasError = true;
+      }
+
+      if (!hasError && question1Select && question2Select && 
+          question1Select.value && question2Select.value && 
+          question1Select.value === question2Select.value) {
+        errorMessage = 'Please select different security questions';
+        question2Select.focus();
+        hasError = true;
+      }
+      
+      if (hasError) {
+        showFormError(errorMessage);
+        return; // Prevent form submission
+      }
+
+
+      // If all validation passes, manually submit the form
+      this.submit();
+    });
+  } else {
+    console.error('Form element not found!');
+  }
+
+  // Initialize security question options when page loads
+  updateSecurityQuestionOptions();
+</script>
+</body>
+</html>
