@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cafeteria Dashboard</title>
+  <link rel="stylesheet" href="{% static 'dashboard/management.css' %}" />
+</head>
+<body>
+  <div class="wrapper">
+    <aside class="sidebar">
+      <h2>Cafeteria</h2>
+        <ul id="categoryNav">
+            <li data-category="All">All Items</li>
+            <li data-category="Snacks">Snacks</li>
+            <li data-category="Beverages">Beverages</li>
+            <li data-category="Desserts">Desserts</li>
+            <li><a href="/transactions/" style="color: white !important; text-decoration: none !important;">View Transactions</a></li>
+            <!-- Add a li linking back to cafe.html -->
+            {% comment %} <li><a href="/shop/">Back to Cafe</a></li> {% endcomment %}
+        </ul>
+    </aside>
+
+    <main class="main-content">
+      <header>
+        <h1>Dashboard</h1>
+        <div class="header-controls">
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search items...">
+        <button id="clearSearch">✕</button>
+      </div>
+      <button id="addItemBtn">+ Add Item</button>
+    </div>
+      </header>
+
+      <section>
+        <table>
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Category</th>
+              <th>Qty Remaining</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="inventoryTable">
+            <!-- JS will populate rows -->
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal for adding new items -->
+  <div class="modal" id="itemModal">
+    <div class="modal-content">
+      <h3>Add Item</h3>
+      <form id="itemForm">
+        {% csrf_token %}
+        <input type="text" id="itemName" placeholder="Item Name" required />
+        <input type="number" id="itemQty" placeholder="Quantity" required />
+        <select id="itemCategory">
+          <option value="Snacks">Snacks</option>
+          <option value="Beverages">Beverages</option>
+          <option value="Desserts">Desserts</option>
+        </select>
+        <button type="submit">Save</button>
+        <button type="button" id="closeModal">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+
+    <!-- Transactions Modal -->
+  <div class="modal" id="transactionsModal">
+    <div class="modal-content transactions-modal">
+      <h3>Recent Orders</h3>
+      <div class="transactions-container">
+        <table class="transactions-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Student ID</th>
+              <th>Date</th>
+              <th>Total Amount</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsTable">
+            <!-- JS will populate rows -->
+          </tbody>
+        </table>
+      </div>
+      <button type="button" id="closeTransactionsModal">Close</button>
+    </div>
+  </div>
+  
+
+  <script src="{% static 'dashboard/management.js' %}"></script>
+</body>
+</html>
